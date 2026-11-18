@@ -1,0 +1,36 @@
+3name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Klonowanie repozytorium
+        uses: actions/checkout@v4
+
+      - name: Konfiguracja Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Instalacja narzędzi i Capacitora
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init RapEmpire com.rapempire.game --web-dir .
+          npx cap add android
+          npx cap sync android
+
+      - name: Kompilacja pliku APK przez Gradle
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Zapisanie pliku APK jako artefaktu
+        uses: actions/upload-artifact@v4
+        with:
+          name: rap-empire-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
