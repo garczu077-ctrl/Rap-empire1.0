@@ -1,0 +1,3538 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>RAP EMPIRE 9.2</title>
+<style>
+  :root {
+    --bg: #07080d;
+    --surface: rgba(18, 20, 30, 0.82);
+    --surface-2: rgba(28, 31, 46, 0.92);
+    --border: rgba(255, 255, 255, 0.10);
+    --border-gold: rgba(245, 197, 66, 0.45);
+    --gold: #f5c542;
+    --gold-grad: linear-gradient(135deg, #ffe07d 0%, #d49b1a 100%);
+    --neon-purple: #8b5cf6;
+    --neon-cyan: #06b6d4;
+    --neon-green: #10b981;
+    --neon-red: #f43f5e;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 0;
+    background: #040508; color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    display: flex; justify-content: center;
+  }
+  #app {
+    width: 100%; max-width: 480px; min-height: 100vh;
+    position: relative; overflow-x: hidden;
+    padding-bottom: 92px;
+    background: transparent;
+  }
+
+  #scene-bg {
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px; height: 100vh;
+    z-index: 0; pointer-events: none;
+    background-size: cover; background-position: center;
+  }
+  #scene-overlay {
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px; height: 100vh;
+    z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(139, 92, 246, 0.18), transparent 45%),
+      radial-gradient(circle at 80% 20%, rgba(245, 197, 66, 0.15), transparent 45%),
+      linear-gradient(180deg, #0b0d17 0%, #07080d 100%);
+  }
+
+  .content-layer { position: relative; z-index: 2; }
+
+  /* EKRAN STARTOWY */
+  #screen-title {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 28px 18px 36px 18px; text-align: center;
+    background: url('tytul.png') center/cover no-repeat;
+  }
+  #screen-title .logo-glow { display: none; }
+  .logo-glow {
+    filter: drop-shadow(0 10px 30px rgba(245, 197, 66, 0.45));
+    animation: floatLogo 4s ease-in-out infinite;
+  }
+  @keyframes floatLogo {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-7px); }
+  }
+  .title-menu-box {
+    background: rgba(16, 18, 28, 0.85);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--border-gold);
+    border-radius: 24px; padding: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+  }
+
+  /* GALERIA KOMIKSOWYCH PORTRETÓW */
+  .portrait-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    max-height: 225px;
+    overflow-y: auto;
+    padding: 4px;
+    margin-bottom: 8px;
+    scrollbar-width: thin;
+  }
+  .portrait-tile {
+    aspect-ratio: 1/1;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    background: #161926;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .portrait-tile img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .portrait-tile.selected {
+    border-color: var(--gold);
+    box-shadow: 0 0 14px rgba(245, 197, 66, 0.5);
+    transform: scale(0.97);
+  }
+  .portrait-num {
+    position: absolute; bottom: 3px; right: 4px;
+    background: rgba(0,0,0,0.78); color: var(--gold);
+    font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 6px;
+  }
+  .portrait-gender-tag {
+    position: absolute; top: 3px; left: 4px;
+    background: rgba(0,0,0,0.72); color: #fff;
+    font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 5px;
+  }
+
+  /* KARTA PROFILOWA RAPERA NA PULPICIE */
+  .profile-hero-card {
+    background: linear-gradient(155deg, rgba(24, 27, 42, 0.94) 0%, rgba(13, 15, 24, 0.96) 100%);
+    backdrop-filter: blur(18px);
+    border: 1.5px solid var(--border-gold);
+    border-radius: 22px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  }
+  .profile-top-row {
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .profile-portrait-box {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2.5px solid var(--gold);
+    flex-shrink: 0;
+    background: #141724;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+  }
+  .profile-portrait-box img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .stage-pill-mini {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(9, 10, 15, 0.86);
+    border: 1px solid var(--border-gold);
+    color: var(--gold);
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 7px;
+    white-space: nowrap;
+  }
+  .profile-identity {
+    flex: 1;
+    min-width: 0;
+  }
+  .profile-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .profile-nick {
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.15;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .profile-loc {
+    font-size: 12px;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 2px;
+  }
+  .profile-submeta {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .milestone-banner-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    background: rgba(139, 92, 246, 0.18);
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    color: #ddd6fe;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .profile-certs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 11px;
+  }
+  .cert-pill {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px 4px;
+    text-align: center;
+    position: relative;
+  }
+  .cert-val {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--text);
+  }
+  .cert-lbl {
+    font-size: 8.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+  .claim-dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--neon-green);
+    border: 2px solid #0d0f18;
+    animation: pulseClaim 1.5s infinite;
+  }
+  @keyframes pulseClaim {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+  }
+  .biggest-hit-box {
+    margin-top: 10px;
+    background: linear-gradient(135deg, rgba(245, 197, 66, 0.12), rgba(28, 31, 46, 0.85));
+    border: 1px solid var(--border-gold);
+    border-radius: 14px;
+    padding: 8px 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* MODERN TOPBAR & HUD */
+  .topbar {
+    position: sticky; top: 0; z-index: 25;
+    background: rgba(10, 12, 20, 0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .brand-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 900; letter-spacing: 0.8px; font-size: 14px;
+    background: var(--gold-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    cursor: pointer;
+  }
+  .day-chip {
+    background: var(--surface-2); border: 1px solid var(--border);
+    padding: 5px 11px; border-radius: 20px; font-size: 11px; font-weight: 800;
+  }
+  .inbox-btn {
+    position: relative; background: var(--surface-2); border: 1px solid var(--border-gold);
+    border-radius: 50%; width: 34px; height: 34px; padding: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .inbox-dot {
+    position: absolute; top: -3px; right: -3px;
+    background: var(--neon-red); color: #fff; font-size: 9px; font-weight: 900;
+    min-width: 16px; height: 16px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; padding: 0 4px;
+  }
+
+  .hud-grid {
+    display: grid; grid-template-columns: 1.35fr 1fr 0.8fr 0.85fr 0.85fr;
+    gap: 6px; padding: 10px 12px;
+    background: rgba(12, 14, 22, 0.78);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .hud-pill {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 6px 4px; text-align: center;
+  }
+  .hud-val { font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+  .hud-lbl { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 1px; }
+  .gold-txt { color: var(--gold); }
+  .green-txt { color: var(--neon-green); }
+  .red-txt { color: var(--neon-red); }
+  .cyan-txt { color: var(--neon-cyan); }
+
+  .screen { display: none; padding: 14px; animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+  .screen.active { display: block; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 15px; margin-bottom: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+  .card-title {
+    font-size: 11.5px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--gold); margin: 0 0 12px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; font-size: 13px; }
+  .muted { color: var(--muted); font-size: 11.5px; }
+
+  .bar-bg { width: 100%; height: 7px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+  .bar-fill { height: 100%; background: var(--gold-grad); border-radius: 99px; transition: width 0.3s ease; }
+  .bar-fill.street { background: linear-gradient(90deg, var(--neon-red), var(--neon-purple), var(--neon-cyan)); }
+  .bar-fill.green { background: linear-gradient(90deg, #059669, #10b981); }
+
+  button {
+    background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+    padding: 11px 14px; border-radius: 14px; font-weight: 700; font-size: 13px;
+    cursor: pointer; transition: all 0.15s ease; width: 100%;
+  }
+  button:active { transform: scale(0.96); }
+  button.primary {
+    background: var(--gold-grad); color: #090a0f; border: none; font-weight: 900;
+    box-shadow: 0 6px 20px rgba(245, 197, 66, 0.32);
+  }
+  button.sm { padding: 7px 12px; font-size: 11px; width: auto; border-radius: 10px; }
+  button.danger { border-color: rgba(244, 63, 94, 0.45); color: var(--neon-red); background: rgba(244, 63, 94, 0.08); }
+
+  .action-tile {
+    background: linear-gradient(180deg, rgba(35, 39, 58, 0.9), rgba(22, 25, 38, 0.95));
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 12px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .action-tile-icon { font-size: 20px; }
+  .action-tile-title { font-size: 12px; font-weight: 800; color: var(--text); }
+  .action-tile-sub { font-size: 10px; color: var(--muted); }
+
+  .h-scroll {
+    display: flex; gap: 9px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px;
+    scrollbar-width: none;
+  }
+  .h-scroll::-webkit-scrollbar { display: none; }
+  .pick-card {
+    min-width: 132px; background: var(--surface-2); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 10px; cursor: pointer; flex-shrink: 0;
+  }
+  .pick-card.selected {
+    border-color: var(--gold);
+    background: linear-gradient(145deg, rgba(245, 197, 66, 0.18), rgba(28, 31, 46, 0.95));
+  }
+
+  .region-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .reg-tile {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 9px; cursor: pointer;
+  }
+  .reg-tile.conquered {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, rgba(245,197,66,0.16), rgba(28,31,46,0.9));
+  }
+
+  input, select, textarea {
+    width: 100%; background: rgba(11, 13, 20, 0.88); color: var(--text);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 12px; font-size: 13px; margin-bottom: 10px; font-family: inherit;
+  }
+  textarea { min-height: 78px; resize: vertical; }
+
+  .nav-wrap {
+    position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 20px); max-width: 460px; z-index: 30;
+  }
+  .nav {
+    background: rgba(16, 18, 28, 0.94);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 22px;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    padding: 6px 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.75);
+  }
+  .nav-btn {
+    background: none; border: none; color: var(--muted);
+    font-size: 10px; font-weight: 700; padding: 5px 0; border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .nav-btn.active { color: #090a0f; background: var(--gold-grad); font-weight: 900; }
+  .nav-icon { font-size: 16px; }
+
+  .list-item {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 11px; margin-bottom: 9px;
+  }
+  .list-item.highlight {
+    border-color: var(--border-gold);
+    background: linear-gradient(135deg, rgba(245,197,66,0.15), rgba(28,31,46,0.88));
+  }
+  .list-item.claimed {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(28, 31, 46, 0.88));
+  }
+  .badge {
+    display: inline-block; padding: 3px 7px; border-radius: 8px;
+    font-size: 10px; font-weight: 800; background: rgba(255,255,255,0.12); color: var(--text);
+  }
+  .badge.gold { background: var(--gold-grad); color: #090a0f; }
+  .badge.green { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.5); }
+  .news-item {
+    border-left: 3px solid var(--gold); padding-left: 10px;
+    margin-bottom: 9px; font-size: 12px; line-height: 1.45;
+  }
+  .toast {
+    position: fixed; top: 64px; left: 50%; transform: translateX(-50%);
+    background: var(--gold-grad); color: #090a0f; font-weight: 900; font-size: 12px;
+    padding: 9px 18px; border-radius: 99px; z-index: 120;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.75); display: none; text-align: center; max-width: 90%;
+  }
+  .float-gain {
+    position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%);
+    font-size: 20px; font-weight: 900; color: var(--gold);
+    text-shadow: 0 4px 16px rgba(0,0,0,0.9);
+    pointer-events: none; z-index: 150;
+    animation: floatUpFade 1.1s ease-out forwards;
+  }
+  @keyframes floatUpFade {
+    0% { opacity: 1; transform: translate(-50%, 0) scale(0.9); }
+    100% { opacity: 0; transform: translate(-50%, -65px) scale(1.15); }
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(4, 5, 10, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 100; display: none; align-items: center; justify-content: center; padding: 14px;
+  }
+  .modal-box {
+    background: #131622; border: 1px solid var(--border-gold);
+    border-radius: 22px; padding: 18px; width: 100%; max-width: 430px;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .cover-box {
+    position: relative; width: 50px; height: 50px; border-radius: 10px;
+    overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center; font-size: 21px;
+  }
+  .cover-box.lg { width: 88px; height: 88px; border-radius: 14px; font-size: 36px; }
+  .cover-box img { width: 100%; height: 100%; object-fit: cover; }
+  .pa-tag {
+    position: absolute; bottom: 2px; right: 2px;
+    background: #000; color: #fff; border: 1px solid #fff;
+    font-size: 5px; font-weight: 900; padding: 1px 2px; line-height: 1;
+  }
+  .avatar-wrap {
+    width: 60px; height: 60px; border-radius: 16px; overflow: hidden;
+    border: 2px solid var(--gold); flex-shrink: 0; background: #181a26;
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .mini-avatar {
+    width: 34px; height: 34px; border-radius: 10px; overflow: hidden;
+    border: 1.5px solid var(--border-gold); flex-shrink: 0; background: #181a26;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .seg-tabs {
+    display: flex; gap: 6px; background: rgba(12, 14, 22, 0.8);
+    padding: 5px; border-radius: 14px; border: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .seg-tab {
+    padding: 8px; font-size: 11px; border-radius: 10px;
+    background: transparent; border: none; color: var(--muted);
+  }
+  .seg-tab.active { background: var(--gold-grad); color: #090a0f; font-weight: 900; }
+
+  .vs-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(90deg, rgba(245,197,66,0.14), rgba(139,92,246,0.14), rgba(244,63,94,0.16));
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 10px 12px; margin-bottom: 10px; gap: 8px;
+  }
+  .vs-badge {
+    background: var(--neon-red); color: #fff; font-weight: 900; font-size: 11px;
+    padding: 4px 8px; border-radius: 99px; flex-shrink: 0;
+  }
+  .rival-verse-box {
+    background: rgba(244, 63, 94, 0.12);
+    border-left: 3px solid var(--neon-red);
+    padding: 10px 12px; border-radius: 12px;
+    font-size: 12px; font-style: italic; line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .rhyme-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .rhyme-chip {
+    background: rgba(245,197,66,0.16); border: 1px solid var(--gold);
+    color: var(--gold); font-size: 11px; padding: 4px 10px;
+    border-radius: 99px; cursor: pointer; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="scene-bg"></div>
+  <div id="scene-overlay"></div>
+
+  <div class="content-layer">
+    <div id="toast" class="toast"></div>
+
+    <!-- MODALS -->
+    <div id="event-modal" class="modal-bg">
+      <div class="modal-box">
+        <div class="card-title" id="ev-title">WYDARZENIE BRANŻOWE</div>
+        <p id="ev-desc" style="font-size:13px; line-height:1.55; margin-bottom:14px;"></p>
+        <div id="ev-choices"></div>
+      </div>
+    </div>
+
+    <div id="interview-modal" class="modal-bg">
+      <div class="modal-box">
+        <div class="card-title">
+          <span id="int-header">🎙️ WYWIAD NA ŻYWO (1/3)</span>
+          <span class="badge gold" id="int-show-name">RapGodzina</span>
+        </div>
+        <p id="int-question" style="font-size:13.5px; line-height:1.5; margin-bottom:14px; font-weight:600;"></p>
+        <div id="int-answers"></div>
+      </div>
+    </div>
+
+    <div id="inbox-modal" class="modal-bg">
+      <div class="modal-box">
+        <div class="card-title">
+          <span>📩 Centrum Powiadomień</span>
+          <button class="sm" onclick="closeInbox()">Zamknij ✕</button>
+        </div>
+        <div id="inbox-list"></div>
+      </div>
+    </div>
+
+    <div id="track-modal" class="modal-bg">
+      <div class="modal-box">
+        <div class="card-title">
+          <span>💿 Karta Utworu / Albumu</span>
+          <button class="sm" onclick="document.getElementById('track-modal').style.display='none'">Zamknij ✕</button>
+        </div>
+        <div id="track-modal-body"></div>
+      </div>
+    </div>
+
+    <div id="trophies-modal" class="modal-bg">
+      <div class="modal-box">
+        <div class="card-title">
+          <span>🏆 Kamienie Milowe & Gablota</span>
+          <button class="sm" onclick="document.getElementById('trophies-modal').style.display='none'">Zamknij ✕</button>
+        </div>
+        <div id="trophies-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- EKRAN STARTOWY -->
+    <div id="screen-title">
+      <div style="margin-top: 14px;">
+        <svg class="logo-glow" width="280" height="182" viewBox="0 0 320 205">
+          <defs>
+            <linearGradient id="goldMetal" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fff3b0"/>
+              <stop offset="40%" stop-color="#f5c542"/>
+              <stop offset="100%" stop-color="#b88414"/>
+            </linearGradient>
+            <linearGradient id="vinylGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#282c3f"/>
+              <stop offset="100%" stop-color="#0f111a"/>
+            </linearGradient>
+          </defs>
+          <circle cx="160" cy="86" r="66" fill="url(#vinylGrad)" stroke="url(#goldMetal)" stroke-width="2.5"/>
+          <circle cx="160" cy="86" r="52" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <circle cx="160" cy="86" r="24" fill="url(#goldMetal)"/>
+          <circle cx="160" cy="86" r="6" fill="#090a0f"/>
+          <polygon points="124,26 134,6 148,20 160,2 172,20 186,6 196,26" fill="url(#goldMetal)" stroke="#090a0f" stroke-width="2"/>
+          <rect x="148" y="48" width="24" height="44" rx="12" fill="#181a26" stroke="url(#goldMetal)" stroke-width="2.5"/>
+          <path d="M140 74 C140 100, 180 100, 180 74" fill="none" stroke="url(#goldMetal)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="160" y1="95" x2="160" y2="112" stroke="url(#goldMetal)" stroke-width="3.5"/>
+          <rect x="20" y="114" width="280" height="58" rx="14" fill="#0d0f17" stroke="url(#goldMetal)" stroke-width="2.5"/>
+          <text x="160" y="146" text-anchor="middle" fill="url(#goldMetal)" font-family="Arial Black, Impact, sans-serif" font-size="31" font-weight="900" letter-spacing="3">RAP EMPIRE</text>
+          <text x="160" y="164" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="800" letter-spacing="3.5">ULTIMATE EDITION 9.2</text>
+        </svg>
+      </div>
+
+      <div class="title-menu-box">
+        <div id="title-continue-card" style="display:none; margin-bottom:12px;">
+          <div class="list-item highlight" style="text-align:left; display:flex; gap:12px; align-items:center; margin-bottom:10px;">
+            <div id="title-saved-avatar" class="avatar-wrap"></div>
+            <div style="flex:1;">
+              <div style="font-weight:900; font-size:15px; color:var(--gold);" id="title-saved-name">-</div>
+              <div class="muted" id="title-saved-info">-</div>
+            </div>
+          </div>
+          <button class="primary" onclick="continueSavedGame()">▶ KONTYNUUJ KARIERĘ</button>
+        </div>
+
+        <button class="primary" onclick="openCreatorScreen()" style="margin-bottom:10px;">🎙️ NOWA KARIERA</button>
+        <button onclick="openTrophiesModal()" style="margin-bottom:8px;">🏆 KAMIENIE MILOWE & GABLOTA</button>
+        <div class="muted" style="margin-top:8px; font-size:11px;">Wersja 9.2 • Marka Odzieżowa & Dropy • Kamienie Milowe</div>
+      </div>
+    </div>
+
+    <!-- EKRAN TWORZENIA KARIERY (JEDNORAZOWY WYBÓR PORTRETU) -->
+    <div id="screen-creator" class="screen">
+      <div class="row" style="margin-bottom:12px;">
+        <button class="sm" onclick="backToTitle()">← Menu</button>
+        <span style="font-weight:900; color:var(--gold); font-size:14px;">NOWA KARIERA</span>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Wybierz Portret Postaci</span>
+          <button class="sm" onclick="randomizePortrait()">🎲 Losuj</button>
+        </div>
+
+        <div style="display:flex; gap:14px; align-items:center; margin-bottom:12px;">
+          <div id="creator-avatar-preview" class="avatar-wrap" style="width:86px; height:86px; border-radius:20px;"></div>
+          <div style="flex:1;">
+            <div style="font-weight:800; font-size:13px; color:var(--gold); margin-bottom:4px;" id="selected-portrait-label">Portret #02 (Raper)</div>
+            <div class="muted" style="margin-bottom:8px;">Wybierz swój portret na całą karierę lub wgraj własne zdjęcie:</div>
+            <label class="sm" style="background:var(--surface-2); border:1px solid var(--border); padding:7px 11px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; display:inline-block;">
+              📷 Wgraj własne foto
+              <input type="file" id="c-avatar-file" accept="image/*" onchange="handleAvatarUpload(event)" style="display:none;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="seg-tabs" style="margin-bottom:10px;">
+          <button class="seg-tab active" onclick="filterPortraits('all', this)">Wszystkie (47)</button>
+          <button class="seg-tab" onclick="filterPortraits('male', this)">🎤 Raperzy (35)</button>
+          <button class="seg-tab" onclick="filterPortraits('female', this)">👑 Raperki (12)</button>
+        </div>
+
+        <div id="creator-portrait-grid" class="portrait-grid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Dane Sceniczne i Pochodzenie</div>
+        <input id="c-name" placeholder="Pseudonim sceniczny" maxlength="20" />
+        <input id="c-tag" placeholder="Twój Tag (np. Kruk na bicie!)" maxlength="26" />
+        <div class="grid-2">
+          <select id="c-region" onchange="populateCitySelect('c-region', 'c-city')" style="margin-bottom:0;"></select>
+          <select id="c-city" style="margin-bottom:0;"></select>
+        </div>
+        <select id="c-style" style="margin-top:9px; margin-bottom:0;">
+          <option value="Trap">Styl główny: Trap</option>
+          <option value="Drill">Styl główny: Drill</option>
+          <option value="Boom Bap">Styl główny: Boom Bap</option>
+          <option value="Melodic Rap">Styl główny: Melodic Rap</option>
+          <option value="Hardcore Rap">Styl główny: Hardcore Rap</option>
+          <option value="Cloud Rap">Styl główny: Cloud Rap</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Punkty Startowe</span>
+          <span id="c-points-left" class="badge gold">Pozostało: 20</span>
+        </div>
+        <div id="creator-skills-list"></div>
+      </div>
+
+      <button class="primary" onclick="startCareer()">ROZPOCZNIJ KARIERĘ (900 PLN)</button>
+    </div>
+
+    <!-- MAIN GAME UI -->
+    <div id="main-ui" style="display:none;">
+      <div class="topbar">
+        <div class="brand-pill" onclick="backToTitle()">👑 RAP EMPIRE</div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button class="inbox-btn" onclick="openInbox()">
+            📩 <span id="inbox-badge" class="inbox-dot" style="display:none;">0</span>
+          </button>
+          <span class="day-chip" id="ui-day">Dzień 1</span>
+          <button class="primary sm" onclick="advanceDays(1)">+1D</button>
+          <button class="sm" onclick="advanceDays(7)">+7D</button>
+        </div>
+      </div>
+
+      <div class="hud-grid">
+        <div class="hud-pill">
+          <div class="hud-val gold-txt" id="ui-cash">900 zł</div>
+          <div class="hud-lbl">Saldo</div>
+        </div>
+        <div class="hud-pill">
+          <div class="hud-val" id="ui-fans">30</div>
+          <div class="hud-lbl">Fani</div>
+        </div>
+        <div class="hud-pill">
+          <div class="hud-val" id="ui-hype">5</div>
+          <div class="hud-lbl">Hype</div>
+        </div>
+        <div class="hud-pill">
+          <div class="hud-val cyan-txt" id="ui-wena">100%</div>
+          <div class="hud-lbl">Wena</div>
+        </div>
+        <div class="hud-pill">
+          <div class="hud-val green-txt" id="ui-energy">100%</div>
+          <div class="hud-lbl">Energia</div>
+        </div>
+      </div>
+
+      <!-- TAB 1: PULPIT Z KARTĄ PROFILOWĄ I KAMIENIAMI MILOWYMI -->
+      <div id="tab-home" class="screen active">
+        <div class="profile-hero-card">
+          <div class="profile-top-row">
+            <div class="profile-portrait-box">
+              <div id="ui-profile-avatar" style="width:100%; height:100%;"></div>
+              <span class="stage-pill-mini" id="ui-stage-tier">Podziemie</span>
+            </div>
+            <div class="profile-identity">
+              <div class="profile-name-row">
+                <div class="profile-nick" id="ui-stage-name">-</div>
+                <span class="badge gold" id="ui-status">Początkujący</span>
+              </div>
+              <div class="profile-loc" id="ui-location">📍 Opole • woj. Opolskie</div>
+              <div class="profile-submeta" id="ui-style-tag">Styl: Trap • Tag: "-"</div>
+              <div class="profile-submeta" id="ui-crew-badge" style="color:var(--gold); font-weight:700; margin-top:2px;"></div>
+              <div class="milestone-banner-pill" onclick="openTrophiesModal()" id="ui-milestone-badge">
+                🎖️ Kamienie Milowe: 0/12
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:11px;">
+            <div class="row" style="margin-bottom:2px;">
+              <span class="muted">Popularność (Rep): <b style="color:var(--text)" id="ui-rep">3</b>/100</span>
+              <span class="muted">Trend w PL: <b class="gold-txt" id="ui-trend">Trap</b></span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" id="ui-rep-bar" style="width:3%"></div></div>
+
+            <div class="row" style="margin-top:9px; margin-bottom:2px;">
+              <span class="muted">Wizerunek: <b id="ui-street-lbl" style="color:var(--text);">Zbalansowany</b></span>
+              <span class="muted" style="font-size:10px;">Ulica 0 ◄► 100 Mainstream</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill street" id="ui-street-bar" style="width:35%"></div></div>
+          </div>
+
+          <div class="profile-certs-grid">
+            <div class="cert-pill">
+              <div class="cert-val gold-txt" id="ui-gold-count">0 🥇</div>
+              <div class="cert-lbl">Złote</div>
+            </div>
+            <div class="cert-pill">
+              <div class="cert-val cyan-txt" id="ui-plat-count">0 💿</div>
+              <div class="cert-lbl">Platyny</div>
+            </div>
+            <div class="cert-pill">
+              <div class="cert-val" id="ui-conquered-count">0/16 🗺️</div>
+              <div class="cert-lbl">Wojew.</div>
+            </div>
+            <div class="cert-pill" onclick="openTrophiesModal()" style="cursor:pointer;">
+              <span id="ui-claim-dot" class="claim-dot" style="display:none;"></span>
+              <div class="cert-val gold-txt" id="ui-trophies">0 🏆</div>
+              <div class="cert-lbl">Kamienie</div>
+            </div>
+          </div>
+
+          <div id="ui-biggest-hit-box" class="biggest-hit-box">
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:9.5px; font-weight:800; text-transform:uppercase; color:var(--gold); letter-spacing:0.5px;">🔥 Największy Hit</div>
+              <div style="font-size:12.5px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="ui-hit-title">Brak wydanych utworów</div>
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+              <div class="gold-txt" style="font-size:12px; font-weight:900;" id="ui-hit-streams">-</div>
+              <div class="muted" style="font-size:9px;" id="ui-hit-sub">Nagraj numer w Studiu</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="active-beef-card" class="card" style="display:none; border-color:var(--neon-red);">
+          <div class="card-title">
+            <span>🔥 AKTYWNY BEEF – GŁOSOWANIE</span>
+            <span class="badge" style="background:var(--neon-red);" id="beef-days-left">Koniec za 3d</span>
+          </div>
+          <div class="row" style="margin-bottom:4px;">
+            <b id="beef-p-name">Ty</b>
+            <b id="beef-r-name">Rywal</b>
+          </div>
+          <div class="bar-bg" style="height:10px;">
+            <div id="beef-bar" style="height:100%; background:var(--gold-grad); width:50%; transition:width 0.3s;"></div>
+          </div>
+          <div class="row" style="margin-top:5px; margin-bottom:0;">
+            <span class="gold-txt" style="font-size:11px; font-weight:800;" id="beef-p-pct">50% głosów</span>
+            <span class="red-txt" style="font-size:11px; font-weight:800;" id="beef-r-pct">50% głosów</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Akcje Codzienne</div>
+          <div class="grid-3">
+            <button class="action-tile" onclick="workOddJob()">
+              <span class="action-tile-icon">📦</span>
+              <span class="action-tile-title">Dorób</span>
+              <span class="action-tile-sub">-30E | +220zł</span>
+            </button>
+            <button class="action-tile" onclick="postSocial()">
+              <span class="action-tile-icon">📱</span>
+              <span class="action-tile-title">RapGram</span>
+              <span class="action-tile-sub">-10E | +Hype</span>
+            </button>
+            <button class="action-tile" onclick="recoverWena()">
+              <span class="action-tile-icon">🌲</span>
+              <span class="action-tile-title">Reset</span>
+              <span class="action-tile-sub">-25E | +45% Weny</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Trening Umiejętności (-20E)</div>
+          <div id="skills-train-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">RapPortal.pl – Tablica Rynku</div>
+          <div id="ui-news"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: STUDIO -->
+      <div id="tab-studio" class="screen">
+        <div class="card">
+          <div class="card-title">
+            <span>Studio Nagrań (-25E | -25% Weny)</span>
+            <span class="badge gold" id="studio-wena-badge">Wena: 100%</span>
+          </div>
+          <input id="t-title" placeholder="Wpisz tytuł utworu..." maxlength="28" />
+          <div class="grid-2">
+            <select id="t-mode">
+              <option value="single">Wydaj Singiel</option>
+              <option value="vault">Zapisz na Album/EP</option>
+              <option value="diss">Diss Track (Atak)</option>
+            </select>
+            <select id="t-feat">
+              <option value="">Bez gościa (Solo)</option>
+            </select>
+          </div>
+          <select id="t-target" style="display:none;"></select>
+
+          <div class="muted" style="margin-bottom:5px; font-weight:700;">1. Wybierz Producenta / Bit (przesuń w bok):</div>
+          <div id="producer-carousel" class="h-scroll"></div>
+          <input type="hidden" id="t-producer" value="0" />
+
+          <div id="beatmaker-box" style="display:block; background:rgba(245,197,66,0.1); border:1px solid var(--border-gold); border-radius:14px; padding:10px; margin-bottom:10px;">
+            <div style="font-size:11px; font-weight:800; color:var(--gold); margin-bottom:6px;">🎹 MINI-BEATMAKER (0 PLN – 100% WŁASNA PRODUKCJA)</div>
+            <div class="grid-3" style="margin-bottom:0;">
+              <select id="bm-drums" style="margin-bottom:0; padding:6px;">
+                <option value="Trap">Trap 808</option>
+                <option value="Boom Bap">Klasyk MPC</option>
+                <option value="Drill">UK Drill</option>
+              </select>
+              <select id="bm-melody" style="margin-bottom:0; padding:6px;">
+                <option value="dark">Mroczne Piano</option>
+                <option value="soul">Soul Sampl</option>
+                <option value="synth">Ciężki Synth</option>
+              </select>
+              <select id="bm-bpm" style="margin-bottom:0; padding:6px;">
+                <option value="92">92 BPM</option>
+                <option value="128">128 BPM</option>
+                <option value="142">142 BPM</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="muted" style="margin-bottom:5px; font-weight:700;">2. Wybierz Studio Nagrań:</div>
+          <div id="studio-carousel" class="h-scroll"></div>
+          <input type="hidden" id="t-studio" value="0" />
+
+          <div style="background:var(--surface-2); padding:11px; border-radius:14px; margin-bottom:10px; border:1px solid var(--border);">
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+              <div id="cover-preview" class="cover-box lg" style="background:#7f1d1d;">
+                <span id="cov-prev-icon">👑</span>
+                <span id="cov-pa-badge" class="pa-tag">PARENTAL<br>ADVISORY</span>
+              </div>
+              <div style="flex:1;">
+                <div class="muted" style="font-weight:700; color:var(--text); margin-bottom:4px;">Okładka Płyty:</div>
+                <input type="file" id="cov-file" accept="image/*" onchange="handleCoverUpload(event)" style="padding:5px; font-size:11px; margin-bottom:4px;" />
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <label class="muted"><input type="checkbox" id="cov-pa" checked onchange="updateCoverPreview()" style="width:auto; margin:0;" /> Naklejka PA</label>
+                  <button class="sm" onclick="clearCustomCover()" style="padding:3px 7px; font-size:10px;">Reset</button>
+                </div>
+              </div>
+            </div>
+            <div class="grid-3" style="margin-bottom:0;">
+              <select id="cov-bg" onchange="updateCoverPreview()" style="margin-bottom:0; padding:6px;">
+                <option value="#7f1d1d">Karmazyn</option>
+                <option value="#1e3a8a">Granat</option>
+                <option value="#14532d">Zieleń</option>
+                <option value="#4c1d95">Purpura</option>
+                <option value="#27272a">Stalowy</option>
+                <option value="#78350f">Złoty</option>
+              </select>
+              <select id="cov-icon" onchange="updateCoverPreview()" style="margin-bottom:0; padding:6px;">
+                <option value="👑">Korona</option>
+                <option value="🔥">Ogień</option>
+                <option value="💀">Czaszka</option>
+                <option value="💎">Diament</option>
+                <option value="🎙️">Mikrofon</option>
+                <option value="⚡">Piorun</option>
+              </select>
+              <select id="cov-filter" onchange="updateCoverPreview()" style="margin-bottom:0; padding:6px;">
+                <option value="none">Bez filtra</option>
+                <option value="grayscale(100%) contrast(120%)">Noir B&W</option>
+                <option value="sepia(60%) contrast(115%)">Vintage</option>
+              </select>
+            </div>
+          </div>
+
+          <textarea id="t-lyrics" placeholder="Wpisz własny tekst (rymy i długość podbijają ocenę)..."></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <button class="sm" onclick="suggestRhymes('t-lyrics', 'studio-rhymes')">💡 Podpowiedz rymy</button>
+            <span class="muted">Kliknij rym, by wstawić</span>
+          </div>
+          <div id="studio-rhymes" class="rhyme-chips"></div>
+
+          <button class="primary" onclick="recordTrack()">🎙️ NAGRAJ UTWÓR</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Skarbiec na Album/EP (<span id="ui-vault-count">0</span>)</span>
+            <span class="muted">Min. 3 EP / 6 Album</span>
+          </div>
+          <div id="ui-vault-list"></div>
+          <div id="album-release-box" style="display:none; margin-top:8px;">
+            <input id="alb-title" placeholder="Tytuł Albumu / EP" maxlength="28" />
+            <button class="primary" onclick="releaseAlbum()">💿 WYDAJ PROJEKT (1 500 PLN)</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Twoja Dyskografia (<span id="ui-track-count">0</span>)</div>
+          <div id="ui-my-tracks"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: LISTY, KONCERTY & MAPA PODBOJU POLSKI -->
+      <div id="tab-charts" class="screen">
+        <div class="seg-tabs">
+          <button class="seg-tab active" onclick="switchConcertTab('c-local', this)">🎤 Koncerty</button>
+          <button class="seg-tab" onclick="switchConcertTab('c-map', this)">🗺️ Mapa Polski</button>
+          <button class="seg-tab" onclick="switchConcertTab('c-fest', this)">🌍 Festiwale</button>
+        </div>
+
+        <div id="c-local" class="card">
+          <div class="card-title">
+            <span>Koncert Indywidualny (-40E)</span>
+            <span id="g-cd-badge" class="badge gold">Gotowy</span>
+          </div>
+          <div id="g-region-info" class="muted" style="color:var(--gold); font-weight:700; margin-bottom:6px;"></div>
+          <div class="grid-2">
+            <select id="g-region" onchange="populateCitySelect('g-region', 'g-city'); updateRegionConcertInfo();"></select>
+            <select id="g-city" onchange="updateRegionConcertInfo()"></select>
+          </div>
+          <select id="g-venue">
+            <option value="0">Mały Pub (Poj. 80 | Wynajem: 300 zł | Rep: 0)</option>
+            <option value="1">Klub Muzyczny (Poj. 300 | Wynajem: 1 600 zł | Rep: 16)</option>
+            <option value="2">Duża Sala (Poj. 1 000 | Wynajem: 7 000 zł | Rep: 40)</option>
+            <option value="3">Hala Widowiskowa (Poj. 4 500 | Wynajem: 26 000 zł | Rep: 65)</option>
+          </select>
+          <div class="row">
+            <span>Cena biletu: <b id="g-price-lbl" class="gold-txt">35 PLN</b></span>
+          </div>
+          <input type="range" id="g-price" min="15" max="220" step="5" value="35" oninput="document.getElementById('g-price-lbl').innerText=this.value+' PLN'" />
+          <button class="primary" onclick="playConcert()">ZAGRAJ KONCERT</button>
+        </div>
+
+        <div id="c-map" class="card" style="display:none;">
+          <div class="card-title">
+            <span>🗺️ Podbój Województw Polski</span>
+            <span class="badge gold" id="map-conquered-badge">0 / 16 Król</span>
+          </div>
+          <div class="muted" style="margin-bottom:10px;">Graj koncerty w kolejnych województwach, by wbijać 100% i zdobyć tytuł <b>Króla Regionu</b> (+20% biletów):</div>
+          <div id="ui-region-map" class="region-grid"></div>
+        </div>
+
+        <div id="c-fest" class="card" style="display:none;">
+          <div class="card-title">
+            <span>Festiwale & Trasy Polonijne (-55E)</span>
+            <span id="fest-cd-badge" class="badge gold">Gotowy</span>
+          </div>
+          <div class="muted" style="margin-bottom:8px;">Wydarzenia specjalne (wymagają przerwy 6 dni między trasami):</div>
+          <div id="ui-festivals-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Kreator Teledysku i Promocji</div>
+          <select id="p-track"></select>
+          <div class="grid-2">
+            <select id="p-loc">
+              <option value="1">Lokacja: Osiedle / Blok</option>
+              <option value="1.3">Lokacja: Nocne Centrum</option>
+              <option value="1.6">Lokacja: Sportowe Auta</option>
+              <option value="2.0">Lokacja: Villa / Zagranica</option>
+            </select>
+            <select id="p-tier">
+              <option value="400">Social Ads (400 zł)</option>
+              <option value="2000">Klip Osiedlowy (2 000 zł)</option>
+              <option value="8500">Klip Kinowy + Radio (8 500 zł)</option>
+            </select>
+          </div>
+          <button onclick="runPromo()">🎬 NAKRĘĆ KLIP / ODPAL PROMOCJĘ</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>TOP 15 Singli w Polsce</span>
+            <span class="muted">Kliknij, by zbadać</span>
+          </div>
+          <div id="ui-top-singles"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">TOP 15 Artystów</div>
+          <div id="ui-top-artists"></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ARENA VS & EKIPA -->
+      <div id="tab-battle" class="screen">
+        <div class="seg-tabs">
+          <button class="seg-tab active" onclick="switchSubTab('sub-free', this)">⚔️ Bitwy & Zaczepki</button>
+          <button class="seg-tab" onclick="switchSubTab('sub-crew', this)">🤝 Moja Ekipa & Mixtape</button>
+        </div>
+
+        <div id="sub-free">
+          <div class="card">
+            <div class="card-title">
+              <span>Turniej Pucharowy (8 Zawodników)</span>
+              <span class="badge gold" id="ui-win-streak">Seria: 0</span>
+            </div>
+            <div id="ui-tournament-box"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>Bitwa Freestyle 1v1 (-20E)</span>
+              <span class="badge" id="fb-cat-badge">Kategoria</span>
+            </div>
+
+            <div class="vs-banner">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div id="vs-player-avatar" class="mini-avatar"></div>
+                <div>
+                  <div style="font-weight:900; font-size:12px; color:var(--gold);" id="vs-player-name">TY</div>
+                  <div class="muted" style="font-size:9.5px;">Pretendent</div>
+                </div>
+              </div>
+              <div class="vs-badge">VS</div>
+              <div style="display:flex; align-items:center; gap:8px; flex:1; justify-content:flex-end;">
+                <select id="fb-rival" onchange="rollFreestylePrompt()" style="margin-bottom:0; padding:6px; font-size:11.5px; max-width:145px;"></select>
+                <div id="vs-rival-avatar" class="mini-avatar"></div>
+              </div>
+            </div>
+
+            <div class="rival-verse-box">
+              <div style="font-style:normal; font-weight:800; color:var(--neon-red); font-size:11px; margin-bottom:4px;" id="fb-rival-header">ZACZEPKA RYWALA:</div>
+              <div id="fb-rival-verse">-</div>
+            </div>
+
+            <div class="list-item highlight">
+              <div style="font-size:12px;">Temat rundy: <b class="gold-txt" id="fb-topic">-</b></div>
+              <div style="font-size:12px; margin-top:4px;">Użyj słów: <b id="fb-words">-</b></div>
+            </div>
+            <textarea id="fb-verses" placeholder="Wpisz swoją odpowiedź (min. 4 wersy, wpleć słowa kluczowe i rymy)..."></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <button class="sm" onclick="suggestRhymes('fb-verses', 'battle-rhymes')">💡 Podpowiedz rymy</button>
+            </div>
+            <div id="battle-rhymes" class="rhyme-chips"></div>
+
+            <div class="grid-2">
+              <button onclick="rollFreestylePrompt()">🔄 Inny temat / słowa</button>
+              <button class="primary" onclick="fightFreestyle(false)">⚔️ ODPOWIEDZ (1v1)</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔥 Zaczep Rywala w Mediach (-10E)</div>
+            <div class="muted" style="margin-bottom:8px;">Prowokuj raperów i raperki w sieci, zdobywaj Hype i prowokuj do odpowiedzi dissem:</div>
+            <div id="ui-taunt-list"></div>
+          </div>
+        </div>
+
+        <div id="sub-crew" style="display:none;">
+          <div class="card">
+            <div class="card-title">Twój Kolektyw / Ekipa</div>
+            <div id="ui-crew-box"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: IMPERIUM (MARKA ODZIEŻOWA & DROPY + WYTWÓRNIA) -->
+      <div id="tab-biz" class="screen">
+        <div class="card">
+          <div class="card-title">👕 Twoja Marka Odzieżowa & Dropy</div>
+          <div id="ui-merch-brand-box"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Twoja Własna Wytwórnia Płytowa</div>
+          <div id="ui-own-label-box"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Kontrakty z Wytwórniami NPC</div>
+          <div class="muted" id="ui-debt-info" style="margin-bottom:8px;"></div>
+          <div id="ui-contract-box"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Inwestycje Muzyczne</div>
+          <div id="ui-empire-box"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Personalizacja Tła i Kopia Zapasowa</div>
+          <label class="muted" style="display:block; margin-bottom:4px;">Wgraj własne tło gry z galerii telefonu:</label>
+          <input type="file" accept="image/*" onchange="handleBgUpload(event)" style="padding:5px; font-size:11px;" />
+          <div class="grid-2" style="margin-bottom:8px;">
+            <button class="sm" onclick="clearCustomBg()" style="width:100%;">Domyślne tło</button>
+            <button class="sm" onclick="exportSaveFile()" style="width:100%;">💾 Pobierz Backup (.json)</button>
+          </div>
+          <label class="muted" style="display:block; margin-bottom:4px;">Wczytaj zapis z pliku (.json):</label>
+          <input type="file" accept=".json" onchange="importSaveFile(event)" style="padding:5px; font-size:11px; margin-bottom:0;" />
+        </div>
+
+        <div class="card">
+          <div class="card-title">Historia Finansowa (PLN)</div>
+          <div id="ui-transactions"></div>
+        </div>
+
+        <button class="danger" onclick="hardReset()" style="margin-top:6px;">Zresetuj karierę (Nowa Gra)</button>
+      </div>
+
+      <!-- FLOATING MODERN BOTTOM NAV -->
+      <div class="nav-wrap">
+        <div class="nav">
+          <button class="nav-btn active" onclick="switchTab('home', this)"><span class="nav-icon">🏠</span>Pulpit</button>
+          <button class="nav-btn" onclick="switchTab('studio', this)"><span class="nav-icon">🎙️</span>Studio</button>
+          <button class="nav-btn" onclick="switchTab('charts', this)"><span class="nav-icon">🔥</span>Listy</button>
+          <button class="nav-btn" onclick="switchTab('battle', this)"><span class="nav-icon">⚔️</span>Arena</button>
+          <button class="nav-btn" onclick="switchTab('biz', this)"><span class="nav-icon">💼</span>Imperium</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SAVE_KEY = "rap_empire_ultimate_v6";
+const MAX_FANS_CAP = 3000000;
+
+// NUMERY PORTRETÓW RAPEREK (1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34)
+const FEMALE_PORTRAIT_NUMS = new Set([1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34]);
+
+const PORTRAIT_ITEMS = [];
+for (let i = 1; i <= 48; i++) {
+  if (i === 24) continue;
+  const num = i < 10 ? "0" + i : "" + i;
+  PORTRAIT_ITEMS.push({
+    file: `${num}_Portret.png`,
+    num,
+    gender: FEMALE_PORTRAIT_NUMS.has(i) ? "female" : "male"
+  });
+}
+
+// KAMIENIE MILOWE KARIERY
+const MILESTONES_DEF = [
+  {
+    id: "m_first_track",
+    title: "Pierwszy Krok w Studiu",
+    desc: "Nagraj i wydaj swój pierwszy singiel.",
+    badgeTitle: "Debiutant Sceny",
+    rewardTxt: "+500 PLN • +8 Hype",
+    check: (g) => g.tracks.length >= 1,
+    reward: (g) => { g.cash += 500; addTx("Nagroda: Pierwszy Krok w Studiu", 500); g.hype = Math.min(100, g.hype + 8); }
+  },
+  {
+    id: "m_1k_fans",
+    title: "Głos Podziemia (1 000 Fanów)",
+    desc: "Zgromadź 1 000 wiernych słuchaczy.",
+    badgeTitle: "Głos Podziemia",
+    rewardTxt: "+1 200 PLN • +3 Rep",
+    check: (g) => g.fans >= 1000,
+    reward: (g) => { g.cash += 1200; addTx("Nagroda: 1 000 Fanów", 1200); g.rep = Math.min(100, g.rep + 3); }
+  },
+  {
+    id: "m_streak_5",
+    title: "Król Bitew (Seria 5 Wygranych)",
+    desc: "Wygraj 5 walk freestyle z rzędu bez porażki.",
+    badgeTitle: "Niepokonany MC",
+    rewardTxt: "+2 500 PLN • +3 Freestyle",
+    check: (g) => Math.max(g.winStreak || 0, (g.records && g.records.maxWinStreak) || 0) >= 5,
+    reward: (g) => { g.cash += 2500; addTx("Nagroda: Niepokonany MC", 2500); g.skills.freestyle = Math.min(100, g.skills.freestyle + 3); }
+  },
+  {
+    id: "m_gold_disc",
+    title: "Pierwsze Złoto",
+    desc: "Zdobądź pierwszą Złotą Płytę (35 000 odtworzeń).",
+    badgeTitle: "Złoty Artysta",
+    rewardTxt: "+4 000 PLN • +12 Hype",
+    check: (g) => g.tracks.some(t => t.goldAwarded),
+    reward: (g) => { g.cash += 4000; addTx("Nagroda: Pierwsza Złota Płyta", 4000); g.hype = Math.min(100, g.hype + 12); }
+  },
+  {
+    id: "m_sold_out",
+    title: "Sold Out Kolekcji",
+    desc: "Wyprzedaj do zera limitowany Drop własnej marki odzieżowej.",
+    badgeTitle: "Ikona Streetwearu",
+    rewardTxt: "+3 500 PLN • +3 Marketing",
+    check: (g) => g.merchBrand && (g.merchBrand.soldOuts || 0) >= 1,
+    reward: (g) => { g.cash += 3500; addTx("Nagroda: Sold Out Kolekcji", 3500); g.skills.marketing = Math.min(100, g.skills.marketing + 3); }
+  },
+  {
+    id: "m_5_regions",
+    title: "Regionalny Lider (5/16 Woj.)",
+    desc: "Osiągnij 100% poparcia w 5 województwach Polski.",
+    badgeTitle: "Władca Regionów",
+    rewardTxt: "+7 500 PLN • +4 Rep",
+    check: (g) => Object.values(g.regionInfluence || {}).filter(v => v >= 100).length >= 5,
+    reward: (g) => { g.cash += 7500; addTx("Nagroda: Regionalny Lider", 7500); g.rep = Math.min(100, g.rep + 4); }
+  },
+  {
+    id: "m_plat_disc",
+    title: "Platynowy Status",
+    desc: "Zdobądź Platynową Płytę (100 000 odtworzeń jednego projektu).",
+    badgeTitle: "Platynowy Gracz",
+    rewardTxt: "+12 000 PLN • +5 Rep",
+    check: (g) => g.tracks.some(t => t.platAwarded),
+    reward: (g) => { g.cash += 12000; addTx("Nagroda: Platynowy Status", 12000); g.rep = Math.min(100, g.rep + 5); }
+  },
+  {
+    id: "m_100k_fans",
+    title: "Ogólnopolski Fenomen (100k)",
+    desc: "Przekrocz barierę 100 000 fanów w całej Polsce.",
+    badgeTitle: "Gwiazda Krajowa",
+    rewardTxt: "+18 000 PLN • +4 Charyzma",
+    check: (g) => g.fans >= 100000,
+    reward: (g) => { g.cash += 18000; addTx("Nagroda: 100 000 Fanów", 18000); g.skills.charisma = Math.min(100, g.skills.charisma + 4); }
+  },
+  {
+    id: "m_own_label",
+    title: "Własne Imperium Wydawnicze",
+    desc: "Załóż własną wytwórnię i zakontraktuj minimum 2 artystów.",
+    badgeTitle: "Prezes Wytwórni",
+    rewardTxt: "+20 000 PLN • +4 Biznes",
+    check: (g) => Boolean(g.ownLabelName && g.signedTalents && g.signedTalents.length >= 2),
+    reward: (g) => { g.cash += 20000; addTx("Nagroda: Prezes Wytwórni", 20000); g.skills.business = Math.min(100, g.skills.business + 4); }
+  },
+  {
+    id: "m_5_plats",
+    title: "Fabryka Platyn (5 Platyn)",
+    desc: "Zdobądź łącznie 5 Platynowych Płyt w swojej dyskografii.",
+    badgeTitle: "Hitmaker Dekady",
+    rewardTxt: "+35 000 PLN • +6 Rep",
+    check: (g) => g.tracks.filter(t => t.platAwarded).length >= 5,
+    reward: (g) => { g.cash += 35000; addTx("Nagroda: Fabryka Platyn", 35000); g.rep = Math.min(100, g.rep + 6); }
+  },
+  {
+    id: "m_16_regions",
+    title: "Król Całej Polski (16/16 Woj.)",
+    desc: "Zdobądź 100% poparcia we wszystkich 16 województwach.",
+    badgeTitle: "Król Polski",
+    rewardTxt: "+50 000 PLN • +8 Rep",
+    check: (g) => Object.values(g.regionInfluence || {}).filter(v => v >= 100).length >= 16,
+    reward: (g) => { g.cash += 50000; addTx("Nagroda: Król Całej Polski", 50000); g.rep = Math.min(100, g.rep + 8); }
+  },
+  {
+    id: "m_1m_fans",
+    title: "Milionowy Kult (1 000 000 Fanów)",
+    desc: "Osiągnij status absolutnej legendy i 1 000 000 fanów.",
+    badgeTitle: "Legenda Polskiego Rapu",
+    rewardTxt: "+100 000 PLN • Status Legendy",
+    check: (g) => g.fans >= 1000000,
+    reward: (g) => { g.cash += 100000; addTx("Nagroda: Milionowy Kult", 100000); g.rep = 100; }
+  }
+];
+
+const DROP_TIERS = [
+  { id: "tee", name: "T-shirty & Czapki", minBrandLvl: 1, unitCost: 35, recPrice: 110, maxPrice: 180 },
+  { id: "hoodie", name: "Bluzy Hoodie & Dresy", minBrandLvl: 2, unitCost: 85, recPrice: 240, maxPrice: 390 },
+  { id: "jacket", name: "Kurtki & Limitowane Sneakersy", minBrandLvl: 3, unitCost: 190, recPrice: 520, maxPrice: 890 }
+];
+
+const POLAND_REGIONS = {
+  "Opolskie": ["Opole", "Prudnik", "Nysa", "Kędzierzyn-Koźle", "Brzeg", "Kluczbork"],
+  "Mazowieckie": ["Warszawa", "Radom", "Płock", "Siedlce", "Pruszków", "Ostrołęka"],
+  "Śląskie": ["Katowice", "Gliwice", "Częstochowa", "Sosnowiec", "Bielsko-Biała", "Rybnik"],
+  "Dolnośląskie": ["Wrocław", "Wałbrzych", "Legnica", "Jelenia Góra", "Lubin", "Głogów"],
+  "Małopolskie": ["Kraków", "Tarnów", "Nowy Sącz", "Oświęcim", "Chrzanów", "Zakopane"],
+  "Wielkopolskie": ["Poznań", "Kalisz", "Konin", "Piła", "Ostrów Wielkopolski", "Gniezno"],
+  "Pomorskie": ["Gdańsk", "Gdynia", "Sopot", "Słupsk", "Tczew", "Wejherowo"],
+  "Łódzkie": ["Łódź", "Piotrków Trybunalski", "Pabianice", "Tomaszów Mazowiecki", "Bełchatów"],
+  "Zachodniopomorskie": ["Szczecin", "Koszalin", "Stargard", "Kołobrzeg", "Świnoujście"],
+  "Kujawsko-Pomorskie": ["Bydgoszcz", "Toruń", "Włocławek", "Grudziądz", "Inowrocław"],
+  "Lubelskie": ["Lublin", "Zamość", "Chełm", "Biała Podlaska", "Puławy"],
+  "Podkarpackie": ["Rzeszów", "Przemyśl", "Stalowa Wola", "Mielec", "Krosno"],
+  "Podlaskie": ["Białystok", "Suwałki", "Łomża", "Augustów"],
+  "Warmińsko-Mazurskie": ["Olsztyn", "Elbląg", "Ełk", "Ostróda"],
+  "Świętokrzyskie": ["Kielce", "Ostrowiec Świętokrzyski", "Starachowice", "Skarżysko-Kamienna"],
+  "Lubuskie": ["Zielona Góra", "Gorzów Wielkopolski", "Nowa Sól", "Żary"]
+};
+
+const SKILL_NAMES = {
+  flow: "Flow",
+  lyrics: "Liryka",
+  delivery: "Delivery",
+  freestyle: "Freestyle",
+  charisma: "Charyzma",
+  marketing: "Marketing",
+  business: "Biznes"
+};
+
+const PRODUCERS = [
+  { id: 0, name: "Własny Bit", icon: "🎹", style: "Beatmaker", quality: 42, cost: 0 },
+  { id: 1, name: "Młody Beatz", icon: "🎧", style: "Trap", quality: 34, cost: 150 },
+  { id: 2, name: "Beton Sampl", icon: "🥁", style: "Boom Bap", quality: 49, cost: 550 },
+  { id: 3, name: "Kruk Drill", icon: "🔪", style: "Drill", quality: 63, cost: 1700 },
+  { id: 4, name: "Nocny Lot", icon: "🌙", style: "Cloud Rap", quality: 75, cost: 4200 },
+  { id: 5, name: "Szaman Hit", icon: "🔥", style: "Melodic", quality: 86, cost: 10500 },
+  { id: 6, name: "Złoty Kruk", icon: "👑", style: "Hardcore", quality: 96, cost: 24000 }
+];
+
+const STUDIOS_LIST = [
+  { val: 0, name: "Domowe", icon: "🏠", mult: "x0.72", cost: 0 },
+  { val: 600, name: "Osiedlowe", icon: "🏢", mult: "x0.94", cost: 600 },
+  { val: 2500, name: "Pro Studio", icon: "🎛️", mult: "x1.15", cost: 2500 },
+  { val: 7500, name: "Top Studio", icon: "💎", mult: "x1.40", cost: 7500 }
+];
+
+const VENUES = [
+  { name: "Mały Pub", cap: 80, rent: 300, minRep: 0 },
+  { name: "Klub Muzyczny", cap: 300, rent: 1600, minRep: 16 },
+  { name: "Duża Sala", cap: 1000, rent: 7000, minRep: 40 },
+  { name: "Hala Widowiskowa", cap: 4500, rent: 26000, minRep: 65 }
+];
+
+const FESTIVALS = [
+  { id: "f1", name: "Opole Rap Fest (Amfiteatr)", minRep: 28, minFans: 3500, fee: 8500, fanGain: 450, streetDelta: 2 },
+  { id: "f2", name: "Polonia Tour: Londyn & Dublin", minRep: 42, minFans: 12000, fee: 22000, fanGain: 1100, streetDelta: 4 },
+  { id: "f3", name: "Mazury Hip-Hop Festiwal", minRep: 58, minFans: 30000, fee: 48000, fanGain: 2600, streetDelta: 5 },
+  { id: "f4", name: "Polonia USA: Chicago & NYC", minRep: 75, minFans: 75000, fee: 115000, fanGain: 5500, streetDelta: 6 }
+];
+
+const LABELS = [
+  { id: "indie", name: "Niezależny (100% zysków)", advance: 0, cut: 0, minFans: 0 },
+  { id: "podziemie", name: "Szary Beton Label", advance: 3500, cut: 0.35, minFans: 1000 },
+  { id: "zloty", name: "Złoty Blok Music", advance: 25000, cut: 0.50, minFans: 15000 },
+  { id: "korona", name: "Korona Empire", advance: 100000, cut: 0.60, minFans: 75000 }
+];
+
+const INITIAL_NPCS = [
+  { id: "n1", name: "Król Południa", gender: "male", style: "Trap", fans: 140000, rep: 86, signedToPlayer: false },
+  { id: "n2", name: "Królowa Południa", gender: "female", style: "Melodic Rap", fans: 112000, rep: 82, signedToPlayer: false },
+  { id: "n3", name: "Vandal 022", gender: "male", style: "Drill", fans: 95000, rep: 79, signedToPlayer: false },
+  { id: "n4", name: "Stary Wyga", gender: "male", style: "Boom Bap", fans: 82000, rep: 90, signedToPlayer: false },
+  { id: "n5", name: "Młoda Fala", gender: "female", style: "Cloud Rap", fans: 64000, rep: 72, signedToPlayer: false },
+  { id: "n6", name: "Lil Beton", gender: "male", style: "Melodic Rap", fans: 58000, rep: 70, signedToPlayer: false },
+  { id: "n7", name: "Hadesiak", gender: "male", style: "Hardcore Rap", fans: 44000, rep: 73, signedToPlayer: false },
+  { id: "n8", name: "Czarna Perła", gender: "female", style: "Drill", fans: 35000, rep: 64, signedToPlayer: false },
+  { id: "n9", name: "Młody Wilku", gender: "male", style: "Trap", fans: 31000, rep: 61, signedToPlayer: false },
+  { id: "n10", name: "Kosa WWA", gender: "male", style: "Drill", fans: 22000, rep: 55, signedToPlayer: false },
+  { id: "n11", name: "Nocna Żmija", gender: "female", style: "Trap", fans: 16500, rep: 51, signedToPlayer: false },
+  { id: "n12", name: "Szary Blok", gender: "male", style: "Boom Bap", fans: 15000, rep: 50, signedToPlayer: false },
+  { id: "n13", name: "Złota Iskra", gender: "female", style: "Melodic Rap", fans: 7400, rep: 41, signedToPlayer: false },
+  { id: "n14", name: "Biały Kruk", gender: "male", style: "Hardcore Rap", fans: 3500, rep: 33, signedToPlayer: false },
+  { id: "n15", name: "Dzieciak 99", gender: "male", style: "Trap", fans: 1900, rep: 25, signedToPlayer: false }
+];
+
+const MALE_PREFIXES = ["Młody", "Mały", "Czarny", "Biały", "Kosa", "Szwagier", "Kruk", "Szary", "Złoty", "Dzieciak", "Nocny"];
+const FEMALE_PREFIXES = ["Młoda", "Mała", "Czarna", "Biała", "Złota", "Nocna", "Dzika", "Srebrna", "Królowa"];
+const TALENT_SUFFIXES = ["077", "WWA", "Kato", "Opole", "Drill", "Beatz", "99", "Blok", "Fala", "Iskra", "Perła", "Gwiazda"];
+
+const FREESTYLE_CATEGORIES = [
+  {
+    category: "Ulica i Osiedle",
+    topics: ["Wychowani na klatkach", "Zasady podwórka", "Szary beton i marzenia", "Od zera z osiedla", "Nocne spacery po dzielnicy", "Blizny z młodości"],
+    words: ["beton", "klatka", "blok", "dzielnica", "chodnik", "brama", "asfalt", "cień", "latarnia", "mur", "korzenie", "ulica", "ekipa", "stary", "łapka", "osiedle", "znak", "blizna"]
+  },
+  {
+    category: "Szmal i Biznes",
+    topics: ["Od pustej kieszeni do milionów", "Kontrakty i pułapki", "Liczę tylko własny zysk", "Inwestycja w siebie", "Cena sukcesu", "Niezależny gracz"],
+    words: ["hajs", "złoto", "konto", "procent", "umowa", "szczyt", "milion", "stawka", "cena", "rynek", "biznes", "zysk", "banknot", "portfel", "skarb", "waga", "diament", "podpis"]
+  },
+  {
+    category: "Lojalność i Zdrada",
+    topics: ["Fałszywi przyjaciele", "Kto został gdy było źle", "Maski opadają w tłumie", "Braterstwo bez ściemy", "Słowo droższe od pieniędzy", "Zdrada za plecami"],
+    words: ["brat", "maska", "fałsz", "prawda", "słowo", "plecy", "nóż", "lustro", "zdrada", "honor", "twarz", "zaufanie", "kręgosłup", "cisza", "kłamstwo", "przysięga", "tarcza", "serce"]
+  },
+  {
+    category: "Walka o Mikrofon",
+    topics: ["Król tej sceny jest jeden", "Zjadłem Cię na śniadanie", "Mój styl to ogień", "Technika ponad wszystko", "Zejdź ze sceny amatorze", "Punchline prosto w szczękę"],
+    words: ["wers", "korona", "ogień", "mikrofon", "scena", "styl", "flow", "rytm", "cios", "nokaut", "król", "tron", "bit", "głos", "tłum", "mistrz", "szacunek", "poziom"]
+  },
+  {
+    category: "Fejm i Media",
+    topics: ["Nagłówki na RapPortalu", "Platynowe płyty na ścianie", "Hype nie kupi charakteru", "Błysk fleszy i samotność", "Wyprzedane sale w całej Polsce", "Trendy przemijają"],
+    words: ["fejm", "hype", "platyna", "lista", "numer", "kamera", "błysk", "gwiazda", "okładka", "radio", "klip", "szum", "ekran", "rekord", "fani", "sala", "koncert", "legenda"]
+  },
+  {
+    category: "Nocne Życie i Droga",
+    topics: ["Nocna trasa przez Polskę", "Światła miasta o 3 nad ranem", "Bezsenność w studiu", "Gaz do dechy", "Między miastami", "Ciemna strona nocy"],
+    words: ["noc", "światła", "gaz", "droga", "trasa", "miasto", "sen", "gwiazdy", "silnik", "mgła", "deszcz", "północ", "świt", "studio", "kawa", "tempo", "cel", "horyzont"]
+  }
+];
+
+const INTERVIEW_SHOWS = ["RapGodzina Live", "Podziemny Przelot", "Krytyk Sceny TV", "Nocny RapTalk", "RapPortal Studio", "Śniadanie z Bitem"];
+
+const INTERVIEW_QUESTIONS_POOL = [
+  {
+    q: "Wielu zarzuca młodym artystom pogoń za komercją. Gdzie Ty stoisz między ulicą a mainstreamem?",
+    a: [
+      { txt: "Zawsze wierny podziemiu, jebać komercję (-12 Mainstream, +3 Rep)", fn: () => { modMainstream(-12); game.rep = Math.min(100, game.rep + 3); } },
+      { txt: "Robię muzykę dla wszystkich, nie zamykam się w klatce (+12 Mainstream, +8 Hype)", fn: () => { modMainstream(12); game.hype = Math.min(100, game.hype + 8); } }
+    ]
+  },
+  {
+    q: "Duża sieć fast-foodów proponuje Ci udział w spocie reklamowym za 6 000 PLN. Wchodzisz?",
+    a: [
+      { txt: "Biorę kontrakt (+6 000 PLN, +16 Mainstream, -3 Rep)", fn: () => { game.cash += 6000; addTx("Reklama komercyjna", 6000); modMainstream(16); game.rep = Math.max(0, game.rep - 3); } },
+      { txt: "Odmawiam, moja twarz nie jest na sprzedaż (-10 Mainstream, +4 Rep)", fn: () => { modMainstream(-10); game.rep = Math.min(100, game.rep + 4); } }
+    ]
+  },
+  {
+    q: "Zapytam wprost: kto z obecnej topki Twoim zdaniem najbardziej się wypalił?",
+    a: [
+      { txt: "Zaczepiam publicznie rywala! (+15 Hype, -2 Rep, prowokacja)", fn: () => { triggerInterviewBeef(); } },
+      { txt: "Nie bawię się w plotki, przemawiam muzyką (+3 Rep, +40% Weny)", fn: () => { game.rep = Math.min(100, game.rep + 3); game.wena = Math.min(100, (game.wena || 80) + 40); } }
+    ]
+  },
+  {
+    q: "Coraz więcej osób używa autotune'a i plastikowych bitów. Co o tym sądzisz?",
+    a: [
+      { txt: "Liczy się surowy tekst i technika (-8 Mainstream, +2 Liryka)", fn: () => { modMainstream(-8); game.skills.lyrics = Math.min(100, game.skills.lyrics + 2); } },
+      { txt: "Trzeba iść z duchem czasu i brzmieniem (+10 Mainstream, +2 Flow)", fn: () => { modMainstream(10); game.skills.flow = Math.min(100, game.skills.flow + 2); } }
+    ]
+  }
+];
+
+const RANDOM_EVENTS = [
+  {
+    title: "Propozycja reklamy napoju energetycznego",
+    desc: "Agencja reklamowa chce wykupić Twój wizerunek na bilbordy w całej Polsce za 4 500 PLN. Co robisz?",
+    c1: { txt: "Biorę kasę (+4 500 zł, +14 Mainstream, -2 Rep)", fn: () => { game.cash += 4500; addTx("Kontrakt reklamowy", 4500); modMainstream(14); game.rep = Math.max(0, game.rep - 2); } },
+    c2: { txt: "Odrzucam, trzymam fason (-8 Mainstream, +3 Rep)", fn: () => { modMainstream(-8); game.rep = Math.min(100, game.rep + 3); } }
+  },
+  {
+    title: "Awaria sprzętu przed występem",
+    desc: "Twój mikrofon przerywa na próbie dźwięku na godzinę przed koncertem. Co robisz?",
+    c1: { txt: "Kupuję na szybko nowy kabel i wkładkę (-250 zł, +2 Rep)", fn: () => { game.cash -= 250; addTx("Awaryjny sprzęt", -250); game.rep = Math.min(100, game.rep + 2); } },
+    c2: { txt: "Gram na tym co jest (-4 Hype)", fn: () => { game.hype = Math.max(0, game.hype - 4); } }
+  },
+  {
+    title: "Viral na TikToku!",
+    desc: "Fragment Twojego kawałka zaczął krążyć w sieci jako trend wśród słuchaczy!",
+    c1: { txt: "Super! (+220 Fanów, +10 Hype, +6 Mainstream)", fn: () => { addFansBalanced(220); game.hype = Math.min(100, game.hype + 10); modMainstream(6); } },
+    c2: { txt: "Dogrywam szybką zwrotkę w odpowiedzi (+300 Fanów, -10 Energii)", fn: () => { addFansBalanced(300); game.energy = Math.max(0, game.energy - 10); } }
+  },
+  {
+    title: "Wyciek demo do sieci!",
+    desc: "Ktoś wrzucił na YouTube niedokończoną wersję Twojego numeru nagraną telefonem w studiu.",
+    c1: { txt: "Zgłaszam prawa autorskie i usuwam (-300 zł, +2 Rep)", fn: () => { game.cash -= 300; addTx("Ochrona praw autorskich", -300); game.rep = Math.min(100, game.rep + 2); } },
+    c2: { txt: "Zostawiam jako darmowy przeciek dla podziemia (+12 Hype, -6 Mainstream)", fn: () => { game.hype = Math.min(100, game.hype + 12); modMainstream(-6); } }
+  },
+  {
+    title: "Młody producent prosi o szansę",
+    desc: "17-latek z Twojego województwa wysłał Ci paczkę bitów i prosi, żebyś nagrał coś na jego podkładzie.",
+    c1: { txt: "Wspieram młodego (+35% Weny, -5 Mainstream, +2 Rep)", fn: () => { game.wena = Math.min(100, (game.wena || 70) + 35); modMainstream(-5); game.rep = Math.min(100, game.rep + 2); } },
+    c2: { txt: "Nie mam teraz czasu na amatorów (-1 Rep)", fn: () => { game.rep = Math.max(0, game.rep - 1); } }
+  },
+  {
+    title: "Zaproszenie do telewizji śniadaniowej",
+    desc: "Ogólnopolska stacja TV zaprasza Cię na kanapę, by porozmawiać o nowym pokoleniu rapu.",
+    c1: { txt: "Idę w garniturze (+20 Mainstream, +350 Fanów, -4 Rep)", fn: () => { modMainstream(20); addFansBalanced(350); game.rep = Math.max(0, game.rep - 4); } },
+    c2: { txt: "Odmawiam, nie pasuję do telewizji (-8 Mainstream, +3 Rep)", fn: () => { modMainstream(-8); game.rep = Math.min(100, game.rep + 3); } }
+  }
+];
+
+const RHYME_BANK = [
+  "beton", "rejon", "fason", "salon", "tron", "szpon", "ton", "dzwon",
+  "hajs", "czas", "las", "gaz", "raz", "blask", "trzask", "kask",
+  "brat", "świat", "ślad", "grad", "bat", "kat", "kwiat", "lat",
+  "noc", "moc", "koc", "proch", "blok", "krok", "wzrok", "mrok",
+  "gra", "mgła", "łza", "dwa", "trwa", "zła", "dna", "zna",
+  "szczyt", "bit", "hit", "mit", "świt", "rytm", "styl", "pył",
+  "głos", "cios", "los", "stos", "nos", "kłos", "włos", "sos"
+];
+
+let selectedPortrait = "02_Portret.png";
+let portraitFilterMode = "all";
+let draftAvatarImg = null;
+let creatorSkills = { flow: 10, lyrics: 10, delivery: 10, freestyle: 10, charisma: 10, marketing: 8, business: 8 };
+let creatorPoints = 20;
+let currentFbPrompt = { category: "", topic: "", words: [] };
+
+let tempCustomCover = null;
+let currentScreenMode = "title";
+let currentTab = "home";
+let activeInterviewQuestions = [];
+let activeInterviewShow = "";
+let interviewStep = 0;
+let lastEventIndex = -1;
+let game = null;
+
+// --- PRZYPISYWANIE UNIKALNYCH PORTRETÓW DLA NPC Z UWZGLĘDNIENIEM PŁCI I PORTRETU GRACZA ---
+function assignUniqueNpcPortraits(npcs, playerApp) {
+  const excludedPortrait = (playerApp && !playerApp.customImg && playerApp.portrait) ? playerApp.portrait : null;
+  const maleFiles = PORTRAIT_ITEMS.filter(p => p.gender === "male" && p.file !== excludedPortrait).map(p => p.file);
+  const femaleFiles = PORTRAIT_ITEMS.filter(p => p.gender === "female" && p.file !== excludedPortrait).map(p => p.file);
+  const used = new Set();
+
+  npcs.forEach(npc => {
+    const validPool = npc.gender === "female" ? femaleFiles : maleFiles;
+    if (npc.portrait && validPool.includes(npc.portrait) && !used.has(npc.portrait)) {
+      used.add(npc.portrait);
+    } else {
+      npc.portrait = null;
+    }
+  });
+
+  const freeMales = maleFiles.filter(f => !used.has(f)).sort(() => 0.5 - Math.random());
+  const freeFemales = femaleFiles.filter(f => !used.has(f)).sort(() => 0.5 - Math.random());
+
+  npcs.forEach(npc => {
+    if (!npc.portrait) {
+      if (npc.gender === "female" && freeFemales.length > 0) {
+        npc.portrait = freeFemales.pop();
+      } else if (freeMales.length > 0) {
+        npc.portrait = freeMales.pop();
+      }
+    }
+  });
+}
+
+// --- WYŚWIETLANIE PORTRETU LUB WGRANEGO ZDJĘCIA ---
+function getAvatarHTML(app) {
+  if (app && app.customImg) {
+    return `<img src="${app.customImg}" style="width:100%; height:100%; object-fit:cover;" />`;
+  }
+  const file = (app && app.portrait) ? app.portrait : "02_Portret.png";
+  return `<img src="${file}" alt="Portret" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='<span>🎤</span>'" />`;
+}
+
+function getNpcAvatarHTML(npc) {
+  const fallback = (npc && npc.gender === "female") ? "01_Portret.png" : "02_Portret.png";
+  const file = (npc && npc.portrait) ? npc.portrait : fallback;
+  return `<img src="${file}" alt="${npc ? npc.name : 'NPC'}" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='<span>🎤</span>'" />`;
+}
+
+// --- KAMIENIE MILOWE: SPRAWDZANIE I ODBIERANIE NAGRÓD ---
+function getUnclaimedMilestonesCount() {
+  if (!game) return 0;
+  if (!game.claimedMilestones) game.claimedMilestones = [];
+  return MILESTONES_DEF.filter(m => !game.claimedMilestones.includes(m.id) && m.check(game)).length;
+}
+
+function getHighestClaimedBadgeTitle() {
+  if (!game || !game.claimedMilestones || game.claimedMilestones.length === 0) return null;
+  for (let i = MILESTONES_DEF.length - 1; i >= 0; i--) {
+    if (game.claimedMilestones.includes(MILESTONES_DEF[i].id)) {
+      return MILESTONES_DEF[i].badgeTitle;
+    }
+  }
+  return null;
+}
+
+function claimMilestone(mId) {
+  if (!game) return;
+  if (!game.claimedMilestones) game.claimedMilestones = [];
+  if (game.claimedMilestones.includes(mId)) return;
+  const m = MILESTONES_DEF.find(x => x.id === mId);
+  if (!m || !m.check(game)) return showToast("Warunki kamienia milowego nie są jeszcze spełnione!");
+
+  game.claimedMilestones.push(mId);
+  game.trophies = game.claimedMilestones.length;
+  m.reward(game);
+  addNews(`🎖️ KAMIEN MILOWY! <b>${game.stageName}</b> odblokował osiągnięcie <b>"${m.title}"</b> i zdobywa tytuł <b>[${m.badgeTitle}]</b>!`);
+  spawnFloatGain(`ODZNAKA: ${m.badgeTitle.toUpperCase()}! 🎖️`);
+  saveGame();
+  renderAll();
+  openTrophiesModal();
+  showToast(`Odebrano nagrodę: ${m.rewardTxt}!`);
+}
+
+// --- MARKA ODZIEŻOWA & LIMITOWANE DROPY (BEZ SPRZEDAŻY NA KONCERTACH) ---
+function foundMerchBrand() {
+  const name = document.getElementById("merch-brand-name").value.trim();
+  const vibe = document.getElementById("merch-brand-vibe").value;
+  if (!name) return showToast("Wpisz nazwę swojej marki odzieżowej!");
+  if (game.cash < 5000) return showToast("Założenie marki odzieżowej kosztuje 5 000 PLN!");
+
+  game.cash -= 5000;
+  game.merchActive = true;
+  game.merchBrand = {
+    name,
+    vibe,
+    level: 1,
+    totalSold: 0,
+    soldOuts: 0,
+    activeDrop: null,
+    lastDropDay: -10
+  };
+  if (vibe === "street") modMainstream(-6);
+  else if (vibe === "luxury") modMainstream(8);
+
+  addTx(`Założenie marki odzieżowej: ${name}`, -5000);
+  addNews(`👕 NOWY BRAND! <b>${game.stageName}</b> startuje z własną marką odzieżową <b>${name}</b>!`);
+  saveGame();
+  renderAll();
+  showToast(`Założono markę ${name}! Czas wypuścić pierwszy Drop.`);
+}
+
+function updateDropCalc() {
+  const tierEl = document.getElementById("drop-tier");
+  const qtyEl = document.getElementById("drop-qty");
+  const priceEl = document.getElementById("drop-price");
+  const lblEl = document.getElementById("drop-calc-lbl");
+  if (!tierEl || !qtyEl || !priceEl || !lblEl) return;
+
+  const tier = DROP_TIERS.find(t => t.id === tierEl.value) || DROP_TIERS[0];
+  const qty = parseInt(qtyEl.value);
+  const price = parseInt(priceEl.value);
+  const prodCost = qty * tier.unitCost;
+  const maxRev = qty * price;
+  lblEl.innerHTML = `Koszt produkcji: <b class="red-txt">${fmt(prodCost)} zł</b> • Potencjalny przychód: <b class="green-txt">${fmt(maxRev)} zł</b>`;
+}
+
+function onDropTierChange() {
+  const tierEl = document.getElementById("drop-tier");
+  const priceEl = document.getElementById("drop-price");
+  if (!tierEl || !priceEl) return;
+  const tier = DROP_TIERS.find(t => t.id === tierEl.value) || DROP_TIERS[0];
+  priceEl.min = Math.round(tier.unitCost * 1.5);
+  priceEl.max = tier.maxPrice;
+  priceEl.value = tier.recPrice;
+  document.getElementById("drop-price-val").innerText = `${tier.recPrice} PLN`;
+  updateDropCalc();
+}
+
+function launchMerchDrop() {
+  if (!game.merchBrand) return;
+  if (game.merchBrand.activeDrop) return showToast("Masz już aktywny Drop w sklepie!");
+  if (game.day - (game.merchBrand.lastDropDay || -10) < 5) {
+    return showToast(`Kolejny Drop możesz wypuścić za ${5 - (game.day - game.merchBrand.lastDropDay)} dni.`);
+  }
+
+  const dropName = document.getElementById("drop-title").value.trim() || `Drop #${(game.merchBrand.soldOuts || 0) + 1}`;
+  const tierId = document.getElementById("drop-tier").value;
+  const tier = DROP_TIERS.find(t => t.id === tierId) || DROP_TIERS[0];
+  if (game.merchBrand.level < tier.minBrandLvl) {
+    return showToast(`Wymagany Poziom Marki: ${tier.minBrandLvl}!`);
+  }
+
+  const qty = parseInt(document.getElementById("drop-qty").value);
+  const price = parseInt(document.getElementById("drop-price").value);
+  const prodCost = qty * tier.unitCost;
+
+  if (game.cash < prodCost) return showToast(`Brakuje ${fmt(prodCost)} PLN na uszycie tej kolekcji!`);
+
+  game.cash -= prodCost;
+  addTx(`Produkcja Dropu: ${game.merchBrand.name} "${dropName}" (${qty} szt.)`, -prodCost);
+
+  game.merchBrand.activeDrop = {
+    name: dropName,
+    tierName: tier.name,
+    recPrice: tier.recPrice,
+    totalQty: qty,
+    remainingQty: qty,
+    price,
+    daysActive: 0,
+    revenue: 0
+  };
+  game.merchBrand.lastDropDay = game.day;
+
+  if (game.merchBrand.vibe === "street") modMainstream(-3);
+  else if (game.merchBrand.vibe === "luxury") modMainstream(4);
+
+  addNews(`🔥 NOWY DROP! Marka <b>${game.merchBrand.name}</b> (${game.stageName}) wrzuciła do sklepu kolekcję <b>"${dropName}"</b> (${qty} szt.)!`);
+  spawnFloatGain(`DROP W SKLEPIE! 👕`);
+  saveGame();
+  renderAll();
+  showToast(`Wypuszczono kolekcję "${dropName}"!`);
+}
+
+function simulateDailyMerchDrop() {
+  if (!game.merchBrand || !game.merchBrand.activeDrop) return;
+  const d = game.merchBrand.activeDrop;
+  d.daysActive += 1;
+
+  const priceRatio = d.recPrice / Math.max(1, d.price);
+  const priceFactor = Math.max(0.25, Math.min(2.1, Math.pow(priceRatio, 1.6)));
+  const brandMult = 1 + (game.merchBrand.level - 1) * 0.35;
+  const mktMult = 1 + (game.skills.marketing / 100);
+  const streetLoyalBonus = (game.merchBrand.vibe === "street" && (game.mainstream || 30) < 35) ? 1.25 : 1.0;
+
+  const rawDemand = (game.fans * 0.012 + game.hype * 2.4 + 12) * priceFactor * brandMult * mktMult * streetLoyalBonus * (0.85 + Math.random() * 0.3);
+  const soldToday = Math.min(d.remainingQty, Math.max(1, Math.floor(rawDemand)));
+
+  d.remainingQty -= soldToday;
+  const dayRev = soldToday * d.price;
+  d.revenue += dayRev;
+  game.merchBrand.totalSold += soldToday;
+
+  addCashWithTax(`Sprzedaż ${game.merchBrand.name} (${soldToday} szt.)`, dayRev);
+
+  if (game.merchBrand.totalSold >= 2500 && game.merchBrand.level < 3) {
+    game.merchBrand.level = 3;
+    addNews(`👑 <b>${game.merchBrand.name}</b> osiąga 3. Poziom Marki! Odblokowano Kurtki & Limitowane Sneakersy.`);
+  } else if (game.merchBrand.totalSold >= 500 && game.merchBrand.level < 2) {
+    game.merchBrand.level = 2;
+    addNews(`🔥 <b>${game.merchBrand.name}</b> osiąga 2. Poziom Marki! Odblokowano Bluzy Hoodie & Dresy.`);
+  }
+
+  if (d.remainingQty <= 0) {
+    game.merchBrand.soldOuts = (game.merchBrand.soldOuts || 0) + 1;
+    const isInstantSoldOut = d.daysActive <= 2;
+    const hypeBonus = isInstantSoldOut ? 14 : 7;
+    game.hype = Math.min(100, game.hype + hypeBonus);
+    game.rep = Math.min(100, game.rep + (isInstantSoldOut ? 3 : 1));
+    addNews(`⚡ SOLD OUT! Kolekcja <b>"${d.name}"</b> marki <b>${game.merchBrand.name}</b> wyprzedana do zera w ${d.daysActive} dni (+${hypeBonus} Hype)!`);
+    addInboxMessage({
+      title: `⚡ SOLD OUT: ${game.merchBrand.name} "${d.name}"!`,
+      body: `Cały nakład (${d.totalQty} szt.) zszedł ze sklepu w ${d.daysActive} dni! Łączny przychód: <b>${fmt(d.revenue)} PLN</b>.`,
+      resolved: true
+    });
+    game.merchBrand.activeDrop = null;
+  } else if (d.daysActive >= 10) {
+    const clearanceRev = Math.floor(d.remainingQty * d.price * 0.45);
+    if (clearanceRev > 0) addCashWithTax(`Wyprzedaż końcówki serii "${d.name}"`, clearanceRev);
+    game.merchBrand.totalSold += d.remainingQty;
+    game.merchBrand.activeDrop = null;
+  }
+}
+
+// --- OBSŁUGA WYBORU PORTRETU NA STARCIE ---
+function openCreatorScreen() {
+  currentScreenMode = "creator";
+  document.getElementById("screen-title").style.display = "none";
+  document.getElementById("main-ui").style.display = "none";
+  document.getElementById("screen-creator").classList.add("active");
+  initRegionSelects("c-region", "c-city", "Opolskie");
+  renderCreatorSkills();
+  renderPortraitGrid("creator-portrait-grid");
+  updateCreatorAvatarPreview();
+}
+
+function filterPortraits(mode, btn) {
+  portraitFilterMode = mode;
+  btn.parentElement.querySelectorAll(".seg-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderPortraitGrid("creator-portrait-grid");
+}
+
+function renderPortraitGrid(containerId) {
+  const grid = document.getElementById(containerId);
+  if (!grid) return;
+
+  const list = PORTRAIT_ITEMS.filter(item => portraitFilterMode === "all" || item.gender === portraitFilterMode);
+  grid.innerHTML = list.map(item => {
+    const isSel = !draftAvatarImg && selectedPortrait === item.file;
+    return `
+      <div class="portrait-tile ${isSel ? "selected" : ""}" onclick="selectPortrait('${item.file}')">
+        <img src="${item.file}" loading="lazy" alt="Portret ${item.num}" />
+        <span class="portrait-gender-tag">${item.gender === "female" ? "♀" : "♂"}</span>
+        <span class="portrait-num">#${item.num}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function selectPortrait(filename) {
+  selectedPortrait = filename;
+  draftAvatarImg = null;
+  const inp = document.getElementById("c-avatar-file");
+  if (inp) inp.value = "";
+  updateCreatorAvatarPreview();
+  renderPortraitGrid("creator-portrait-grid");
+}
+
+function randomizePortrait() {
+  const pool = PORTRAIT_ITEMS.filter(item => portraitFilterMode === "all" || item.gender === portraitFilterMode);
+  const rnd = pool[Math.floor(Math.random() * pool.length)];
+  selectPortrait(rnd.file);
+}
+
+function updateCreatorAvatarPreview() {
+  const box = document.getElementById("creator-avatar-preview");
+  const lbl = document.getElementById("selected-portrait-label");
+  if (!box) return;
+  if (draftAvatarImg) {
+    box.innerHTML = `<img src="${draftAvatarImg}" />`;
+    if (lbl) lbl.innerText = "Własne zdjęcie";
+  } else {
+    const found = PORTRAIT_ITEMS.find(p => p.file === selectedPortrait);
+    const roleTxt = found && found.gender === "female" ? "Raperka" : "Raper";
+    box.innerHTML = `<img src="${selectedPortrait}" onerror="this.outerHTML='<span>🎤</span>'" />`;
+    if (lbl) lbl.innerText = `Portret #${selectedPortrait.split("_")[0]} (${roleTxt})`;
+  }
+}
+
+function renderCreatorSkills() {
+  const container = document.getElementById("creator-skills-list");
+  document.getElementById("c-points-left").innerText = `Pozostało: ${creatorPoints}`;
+  container.innerHTML = "";
+  Object.keys(SKILL_NAMES).forEach(key => {
+    container.innerHTML += `
+      <div class="row">
+        <span>${SKILL_NAMES[key]}</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="sm" onclick="modCreatorSkill('${key}', -1)">-</button>
+          <b style="width:24px; text-align:center;">${creatorSkills[key]}</b>
+          <button class="sm primary" onclick="modCreatorSkill('${key}', 1)">+</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function modCreatorSkill(key, delta) {
+  if (delta > 0 && creatorPoints <= 0) return;
+  if (delta < 0 && creatorSkills[key] <= 5) return;
+  creatorSkills[key] += delta;
+  creatorPoints -= delta;
+  renderCreatorSkills();
+}
+
+// --- RESZTA SILNIKA GRY ---
+function initRegionInfluence(homeRegion) {
+  const map = {};
+  Object.keys(POLAND_REGIONS).forEach(r => { map[r] = r === homeRegion ? 45 : 5; });
+  return map;
+}
+
+function addRegionInfluence(reg, amount) {
+  if (!game.regionInfluence) game.regionInfluence = initRegionInfluence(game.region || "Opolskie");
+  const prev = game.regionInfluence[reg] || 0;
+  const next = Math.min(100, prev + amount);
+  game.regionInfluence[reg] = next;
+  if (prev < 100 && next >= 100) {
+    game.rep = Math.min(100, game.rep + 4);
+    addNews(`👑 PODBÓJ REGIONU! <b>${game.stageName}</b> zdobył 100% poparcia i został <b>Królem Woj. ${reg}</b>!`);
+    addInboxMessage({ title: `👑 Król Woj. ${reg}!`, body: `Osiągnąłeś 100% popularności w regionie ${reg}! Od teraz masz tu stały bonus +20% do frekwencji koncertów.`, resolved: true });
+  }
+}
+
+function spawnFloatGain(text) {
+  const el = document.createElement("div");
+  el.className = "float-gain";
+  el.innerText = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
+function addFansBalanced(rawAmount) {
+  if (!game) return 0;
+  const ratio = Math.max(0.05, 1 - (game.fans / MAX_FANS_CAP));
+  const actual = Math.max(1, Math.floor(rawAmount * ratio));
+  game.fans = Math.min(MAX_FANS_CAP, game.fans + actual);
+  return actual;
+}
+
+function addCashWithTax(desc, grossAmount) {
+  if (grossAmount <= 0) {
+    game.cash += grossAmount;
+    addTx(desc, grossAmount);
+    return grossAmount;
+  }
+  let net = grossAmount;
+  if (grossAmount > 15000) net = Math.floor(15000 + (grossAmount - 15000) * 0.72);
+  game.cash += net;
+  addTx(desc, net);
+  return net;
+}
+
+function modMainstream(delta) {
+  game.mainstream = Math.max(0, Math.min(100, (game.mainstream || 35) + delta));
+}
+
+function suggestRhymes(textareaId, containerId) {
+  const ta = document.getElementById(textareaId);
+  const box = document.getElementById(containerId);
+  const text = ta.value.trim();
+  const words = text.split(/\s+/).filter(Boolean);
+  const lastWord = words.length ? words[words.length - 1].toLowerCase().replace(/[^a-ząćęłńóśźż]/g, "") : "";
+
+  let matches = [];
+  if (lastWord.length >= 2) {
+    const ending2 = lastWord.slice(-2);
+    matches = RHYME_BANK.filter(w => w !== lastWord && w.endsWith(ending2));
+  }
+  if (matches.length < 4) {
+    const shuffled = [...RHYME_BANK].sort(() => 0.5 - Math.random());
+    matches = [...new Set([...matches, ...shuffled])].slice(0, 5);
+  } else {
+    matches = matches.slice(0, 5);
+  }
+  box.innerHTML = matches.map(r => `<span class="rhyme-chip" onclick="insertRhymeWord('${textareaId}', '${r}')">+ ${r}</span>`).join("");
+}
+
+function insertRhymeWord(textareaId, word) {
+  const ta = document.getElementById(textareaId);
+  const sep = ta.value.endsWith(" ") || ta.value.endsWith("\n") || ta.value === "" ? "" : " ";
+  ta.value += sep + word + "\n";
+  ta.focus();
+}
+
+function selectProducerCard(id) {
+  document.getElementById("t-producer").value = id;
+  document.getElementById("beatmaker-box").style.display = id === 0 ? "block" : "none";
+  renderStudioCarousels();
+}
+
+function selectStudioCard(val) {
+  document.getElementById("t-studio").value = val;
+  renderStudioCarousels();
+}
+
+function renderStudioCarousels() {
+  const selProd = parseInt(document.getElementById("t-producer").value || "0");
+  document.getElementById("producer-carousel").innerHTML = PRODUCERS.map(p => `
+    <div class="pick-card ${p.id === selProd ? "selected" : ""}" onclick="selectProducerCard(${p.id})">
+      <div style="font-size:18px; margin-bottom:4px;">${p.icon}</div>
+      <div style="font-weight:800; font-size:12px;">${p.name}</div>
+      <div class="muted" style="font-size:10px;">${p.style} • Jak. ${p.quality}</div>
+      <div class="gold-txt" style="font-weight:900; font-size:11px; margin-top:4px;">${p.cost === 0 ? "0 PLN" : fmt(p.cost) + " zł"}</div>
+    </div>
+  `).join("");
+
+  const selStud = parseInt(document.getElementById("t-studio").value || "0");
+  const studWrap = document.getElementById("studio-carousel");
+  if (game && game.ownsStudio) {
+    studWrap.innerHTML = `<div class="pick-card selected" style="min-width:100%;"><div style="font-weight:900; font-size:12px; color:var(--gold);">🏢 WŁASNE STUDIO PRO (0 PLN | Jakość x1.45)</div></div>`;
+  } else {
+    studWrap.innerHTML = STUDIOS_LIST.map(s => `
+      <div class="pick-card ${s.val === selStud ? "selected" : ""}" onclick="selectStudioCard(${s.val})">
+        <div style="font-size:18px; margin-bottom:4px;">${s.icon}</div>
+        <div style="font-weight:800; font-size:12px;">${s.name}</div>
+        <div class="muted" style="font-size:10px;">Jakość ${s.mult}</div>
+        <div class="gold-txt" style="font-weight:900; font-size:11px; margin-top:4px;">${s.cost === 0 ? "0 PLN" : fmt(s.cost) + " zł"}</div>
+      </div>
+    `).join("");
+  }
+}
+
+function compressImage(file, maxSize, callback) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > maxSize) { h *= maxSize / w; w = maxSize; } }
+      else { if (h > maxSize) { w *= maxSize / h; h = maxSize; } }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL("image/jpeg", 0.72));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleAvatarUpload(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  compressImage(file, 160, (dataUrl) => {
+    draftAvatarImg = dataUrl;
+    updateCreatorAvatarPreview();
+    renderPortraitGrid("creator-portrait-grid");
+    showToast("Wczytano awatar z galerii!");
+  });
+}
+
+function handleCoverUpload(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  compressImage(file, 180, (dataUrl) => {
+    tempCustomCover = dataUrl;
+    updateCoverPreview();
+    showToast("Wczytano okładkę z galerii!");
+  });
+}
+
+function clearCustomCover() {
+  tempCustomCover = null;
+  document.getElementById("cov-file").value = "";
+  updateCoverPreview();
+}
+
+function handleBgUpload(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  compressImage(file, 540, (dataUrl) => {
+    game.customBg = dataUrl;
+    saveGame();
+    applySceneBackground();
+    showToast("Ustawiono własne tło z galerii!");
+  });
+}
+
+function clearCustomBg() {
+  game.customBg = null;
+  saveGame();
+  applySceneBackground();
+  showToast("Przywrócono domyślne tło!");
+}
+
+function applySceneBackground() {
+  const customEl = document.getElementById("scene-bg");
+  if (game && game.customBg && currentScreenMode === "game") {
+    customEl.style.backgroundImage = "url(" + game.customBg + ")";
+  } else {
+    customEl.style.backgroundImage = "";
+  }
+}
+
+function showTitleScreen() {
+  currentScreenMode = "title";
+  document.getElementById("screen-title").style.display = "flex";
+  document.getElementById("screen-creator").classList.remove("active");
+  document.getElementById("main-ui").style.display = "none";
+  applySceneBackground();
+
+  const savedRaw = localStorage.getItem(SAVE_KEY);
+  const contCard = document.getElementById("title-continue-card");
+  if (savedRaw) {
+    try {
+      const parsed = JSON.parse(savedRaw);
+      if (parsed.fans > MAX_FANS_CAP) parsed.fans = 1850000;
+      if (parsed.cash > 25000000) parsed.cash = 1250000;
+      if (!parsed.talentPool) parsed.talentPool = generateTalentPool();
+      if (!parsed.regionInfluence) parsed.regionInfluence = initRegionInfluence(parsed.region || "Opolskie");
+      if (!parsed.appearance) parsed.appearance = { portrait: "02_Portret.png" };
+      if (!parsed.appearance.portrait && !parsed.appearance.customImg) parsed.appearance.portrait = "02_Portret.png";
+      if (!parsed.claimedMilestones) parsed.claimedMilestones = [];
+      if (parsed.merchActive && !parsed.merchBrand) {
+        parsed.merchBrand = { name: `${parsed.stageName} Wear`, vibe: "street", level: 1, totalSold: 0, soldOuts: 0, activeDrop: null, lastDropDay: -10 };
+      }
+      if (parsed.npcs) assignUniqueNpcPortraits(parsed.npcs, parsed.appearance);
+      game = parsed;
+      contCard.style.display = "block";
+      document.getElementById("title-saved-avatar").innerHTML = getAvatarHTML(parsed.appearance);
+      document.getElementById("title-saved-name").innerText = parsed.stageName;
+      document.getElementById("title-saved-info").innerText = `Dzień ${parsed.day} • ${fmt(parsed.cash)} zł • ${fmt(parsed.fans)} fanów`;
+    } catch (e) {
+      contCard.style.display = "none";
+    }
+  } else {
+    contCard.style.display = "none";
+  }
+}
+
+function continueSavedGame() {
+  if (!game) return;
+  initMainUI();
+}
+
+function backToTitle() { showTitleScreen(); }
+
+function openTrophiesModal() {
+  const body = document.getElementById("trophies-modal-body");
+  if (!game) {
+    body.innerHTML = `<div class="muted">Rozpocznij karierę, aby odblokowywać Kamienie Milowe, zdobywać nagrody finansowe i kolekcjonować odznaki na profilu!</div>`;
+  } else {
+    if (!game.claimedMilestones) game.claimedMilestones = [];
+    const goldCount = game.tracks.filter(t => t.goldAwarded).length;
+    const platCount = game.tracks.filter(t => t.platAwarded).length;
+    const rec = game.records || { maxDailyStreams: 0, maxConcertCrowd: 0, maxWinStreak: 0, bestQuality: 0 };
+
+    const milestonesHTML = MILESTONES_DEF.map(m => {
+      const isClaimed = game.claimedMilestones.includes(m.id);
+      const isReady = !isClaimed && m.check(game);
+      return `
+        <div class="list-item ${isClaimed ? "claimed" : isReady ? "highlight" : ""}" style="padding:10px;">
+          <div class="row" style="margin-bottom:3px;">
+            <b style="font-size:12.5px;">${isClaimed ? "✅ " : isReady ? "🎁 " : "🔒 "}${m.title}</b>
+            ${isClaimed
+              ? `<span class="badge green">${m.badgeTitle}</span>`
+              : isReady
+                ? `<button class="sm primary" onclick="claimMilestone('${m.id}')">Odbierz!</button>`
+                : `<span class="badge">W toku</span>`
+            }
+          </div>
+          <div class="muted" style="margin-bottom:3px;">${m.desc}</div>
+          <div style="font-size:10.5px; color:var(--gold); font-weight:700;">Nagroda: ${m.rewardTxt} • Tytuł: [${m.badgeTitle}]</div>
+        </div>
+      `;
+    }).join("");
+
+    body.innerHTML = `
+      <div class="card-title">🎖️ Kamienie Milowe Kariery (${game.claimedMilestones.length}/${MILESTONES_DEF.length})</div>
+      ${milestonesHTML}
+      <div class="card-title" style="margin-top:12px;">📜 Księga Rekordów & Statystyki</div>
+      <div class="list-item" style="margin-bottom:0;">
+        <div class="row"><span>Złote / Platynowe płyty:</span><b class="gold-txt">${goldCount} 🥇 / ${platCount} 💿</b></div>
+        <div class="row"><span>Rekord odsłuchań w 1 dzień:</span><b class="gold-txt">${fmt(rec.maxDailyStreams)}</b></div>
+        <div class="row"><span>Największa publika na żywo:</span><b>${fmt(rec.maxConcertCrowd)} osób</b></div>
+        <div class="row"><span>Najdłuższa seria we Freestyle:</span><b>${rec.maxWinStreak} wygranych</b></div>
+        <div class="row" style="margin-bottom:0;"><span>Najwyższa ocena utworu:</span><b>${rec.bestQuality}/100</b></div>
+      </div>
+    `;
+  }
+  document.getElementById("trophies-modal").style.display = "flex";
+}
+
+function renderCoverBox(track, sizeClass = "") {
+  const pa = track.showPA !== false ? `<span class="pa-tag">PARENTAL<br>ADVISORY</span>` : "";
+  const filterStyle = track.coverFilter && track.coverFilter !== "none" ? `filter:${track.coverFilter};` : "";
+  if (track.coverImg) return `<div class="cover-box ${sizeClass}"><img src="${track.coverImg}" style="${filterStyle}" />${pa}</div>`;
+  return `<div class="cover-box ${sizeClass}" style="background:${track.coverBg || '#27272a'}; ${filterStyle}"><span>${track.coverIcon || '🎵'}</span>${pa}</div>`;
+}
+
+function updateCoverPreview() {
+  const bg = document.getElementById("cov-bg").value;
+  const icon = document.getElementById("cov-icon").value;
+  const filter = document.getElementById("cov-filter").value;
+  const showPA = document.getElementById("cov-pa").checked;
+  const box = document.getElementById("cover-preview");
+  box.innerHTML = tempCustomCover
+    ? `<img src="${tempCustomCover}" style="filter:${filter};" />${showPA ? '<span class="pa-tag">PARENTAL<br>ADVISORY</span>' : ''}`
+    : `<span style="filter:${filter};">${icon}</span>${showPA ? '<span class="pa-tag">PARENTAL<br>ADVISORY</span>' : ''}`;
+  box.style.background = tempCustomCover ? "#000" : bg;
+}
+
+function openSingleDetails(singleId) {
+  const all = [...game.tracks, ...game.npcTracks];
+  const s = all.find(x => x.id === singleId);
+  if (!s) return;
+  const comments = [
+    `"Ten bit siedzi w głowie od rana! 🔥"`,
+    `"W końcu coś świeżego na polskiej scenie."`,
+    `"Refren buja niesamowicie, leci na zapętleniu."`,
+    `"${s.artist} dowiózł poziom, szacunek!"`
+  ];
+  const randomComment = comments[(s.totalStreams + s.age) % comments.length];
+  document.getElementById("track-modal-body").innerHTML = `
+    <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+      ${renderCoverBox(s, "lg")}
+      <div>
+        <div style="font-size:16px; font-weight:900;">${s.title}</div>
+        <div style="color:var(--gold); font-weight:700; font-size:13px;">${s.artist}</div>
+        <div class="muted" style="margin-top:3px;">Styl: ${s.style} • Wiek: ${s.age} dni</div>
+      </div>
+    </div>
+    <div class="list-item">
+      <div class="row"><span>Dzisiejsze odsłuchania:</span><b class="gold-txt">${fmt(s.dailyStreams)}</b></div>
+      <div class="row"><span>Łącznie odsłuchań:</span><b>${fmt(s.totalStreams)}</b></div>
+      <div class="row" style="margin-bottom:0;"><span>Ocena produkcji:</span><b>${s.quality}/100</b></div>
+    </div>
+    <div class="list-item highlight" style="margin-bottom:0;">
+      <div class="muted" style="margin-bottom:3px;">Komentarz słuchacza na RapPortalu:</div>
+      <div style="font-size:12.5px; font-style:italic;">${randomComment}</div>
+    </div>
+  `;
+  document.getElementById("track-modal").style.display = "flex";
+}
+
+function initRegionSelects(regionSelectId, citySelectId, defaultRegion = "Opolskie") {
+  const regSel = document.getElementById(regionSelectId);
+  regSel.innerHTML = Object.keys(POLAND_REGIONS).map(r => `<option value="${r}" ${r === defaultRegion ? "selected" : ""}>${r}</option>`).join("");
+  populateCitySelect(regionSelectId, citySelectId);
+}
+
+function populateCitySelect(regionSelectId, citySelectId) {
+  const reg = document.getElementById(regionSelectId).value;
+  const cities = POLAND_REGIONS[reg] || [];
+  document.getElementById(citySelectId).innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join("");
+}
+
+function updateRegionConcertInfo() {
+  if (!game) return;
+  const reg = document.getElementById("g-region").value;
+  const city = document.getElementById("g-city").value;
+  const inf = (game.regionInfluence && game.regionInfluence[reg]) || 5;
+  const isKing = inf >= 100;
+  const isHome = city === game.city;
+  document.getElementById("g-region-info").innerText = `Poparcie w woj. ${reg}: ${inf}% ${isKing ? "(👑 Król Regionu +20%)" : ""} ${isHome ? "• ★ Miasto rodzinne (+35%)" : ""}`;
+}
+
+function selectRegionFromMap(reg) {
+  document.getElementById("g-region").value = reg;
+  populateCitySelect("g-region", "g-city");
+  updateRegionConcertInfo();
+  const firstTabBtn = document.querySelector("#tab-charts .seg-tab");
+  switchConcertTab("c-local", firstTabBtn);
+  showToast(`Wybrano woj. ${reg} do koncertu!`);
+}
+
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.innerText = msg;
+  el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 2900);
+}
+
+function fmt(num) { return Math.floor(num).toLocaleString("pl-PL"); }
+
+function addTx(desc, amount) {
+  game.transactions.unshift({ day: game.day, desc, amount });
+  if (game.transactions.length > 30) game.transactions.pop();
+}
+
+function addNews(text) {
+  game.news.unshift(`<b>[Dzień ${game.day}]</b> ${text}`);
+  if (game.news.length > 15) game.news.pop();
+}
+
+function addInboxMessage(msgObj) {
+  game.inbox.unshift({ id: "msg_" + Date.now() + Math.random(), day: game.day, read: false, resolved: false, ...msgObj });
+  if (game.inbox.length > 25) game.inbox.pop();
+}
+
+function updateInboxBadge() {
+  if (!game) return;
+  const unread = game.inbox.filter(m => !m.read).length;
+  const badge = document.getElementById("inbox-badge");
+  if (unread > 0) { badge.innerText = unread; badge.style.display = "flex"; }
+  else badge.style.display = "none";
+}
+
+function openInbox() {
+  game.inbox.forEach(m => m.read = true);
+  saveGame();
+  updateInboxBadge();
+  renderInboxList();
+  document.getElementById("inbox-modal").style.display = "flex";
+}
+
+function closeInbox() { document.getElementById("inbox-modal").style.display = "none"; }
+
+function renderInboxList() {
+  const box = document.getElementById("inbox-list");
+  if (game.inbox.length === 0) { box.innerHTML = `<div class="muted">Skrzynka jest pusta.</div>`; return; }
+  box.innerHTML = game.inbox.map(m => {
+    let actionsHTML = "";
+    if (!m.resolved) {
+      if (m.actionType === "feat_offer") {
+        actionsHTML = `<div class="grid-2" style="margin-top:8px;"><button class="sm primary" style="width:100%;" onclick="resolveInbox('${m.id}', 'accept_feat')">Przyjmij Feat (+Hype)</button><button class="sm" style="width:100%;" onclick="resolveInbox('${m.id}', 'decline')">Odrzuć</button></div>`;
+      } else if (m.actionType === "diss_reply") {
+        actionsHTML = `<div style="margin-top:8px;"><button class="sm primary" style="width:100%;" onclick="jumpToDiss('${m.id}', '${m.npcId}')">🎙️ Odpowiedz Dissem w Studiu</button></div>`;
+      } else if (m.actionType === "support_offer") {
+        actionsHTML = `<div class="grid-2" style="margin-top:8px;"><button class="sm primary" style="width:100%;" onclick="resolveInbox('${m.id}', 'accept_support')">Zagraj Support (-25E)</button><button class="sm" style="width:100%;" onclick="resolveInbox('${m.id}', 'decline')">Odmów</button></div>`;
+      } else if (m.actionType === "interview_invite") {
+        actionsHTML = `<div class="grid-2" style="margin-top:8px;"><button class="sm primary" style="width:100%;" onclick="startLiveInterview('${m.id}')">🎙️ Wejdź na antenę</button><button class="sm" style="width:100%;" onclick="resolveInbox('${m.id}', 'decline')">Odrzuć</button></div>`;
+      }
+    } else {
+      actionsHTML = `<div class="muted" style="margin-top:6px; color:var(--green);">✓ Zrealizowano</div>`;
+    }
+    return `<div class="list-item" style="border-color: ${!m.resolved && m.actionType ? 'var(--gold)' : 'var(--border)'};"><div class="row" style="margin-bottom:4px;"><b style="font-size:12.5px; color:var(--gold);">${m.title}</b><span class="muted">Dzień ${m.day}</span></div><div style="font-size:12px; line-height:1.4;">${m.body}</div>${actionsHTML}</div>`;
+  }).join("");
+}
+
+function resolveInbox(msgId, decision) {
+  const msg = game.inbox.find(m => m.id === msgId);
+  if (!msg || msg.resolved) return;
+  if (decision === "decline") { msg.resolved = true; showToast("Odrzucono propozycję."); }
+  else if (decision === "accept_feat") {
+    const npc = game.npcs.find(n => n.id === msg.npcId);
+    msg.resolved = true;
+    if (!game.featCounts) game.featCounts = {};
+    game.featCounts[npc.id] = (game.featCounts[npc.id] || 0) + 1;
+    const gained = addFansBalanced(Math.floor(npc.fans * 0.015 + 65));
+    game.hype = Math.min(100, game.hype + 12);
+    game.rep = Math.min(100, game.rep + 2);
+    addNews(`🤝 <b>${game.stageName}</b> dograł zwrotkę na numer <b>${npc.name}</b> (+${fmt(gained)} fanów)!`);
+    showToast(`Dograno feat dla ${npc.name}! +${fmt(gained)} fanów`);
+  } else if (decision === "accept_support") {
+    if (game.energy < 25) return showToast("Potrzebujesz 25 energii na support!");
+    const npc = game.npcs.find(n => n.id === msg.npcId);
+    msg.resolved = true;
+    game.energy -= 25;
+    const pay = 450 + npc.rep * 15;
+    const gained = addFansBalanced(Math.floor(npc.fans * 0.01 + 45));
+    addCashWithTax(`Support przed: ${npc.name}`, pay);
+    game.rep = Math.min(100, game.rep + 2);
+    addNews(`🎤 <b>${game.stageName}</b> rozgrzał publikę jako support przed <b>${npc.name}</b>!`);
+    showToast(`Support zagrany! +${fmt(pay)} PLN i +${fmt(gained)} fanów`);
+  }
+  saveGame(); renderAll(); renderInboxList();
+}
+
+function triggerInterviewBeef() {
+  const target = game.npcs[Math.floor(Math.random() * 8)];
+  game.hype = Math.min(100, game.hype + 15);
+  game.rep = Math.max(0, game.rep - 2);
+  addNews(`🔥 GORĄCO NA ANTENIE! <b>${game.stageName}</b> otwarcie skrytykował <b>${target.name}</b> w wywiadzie!`);
+  game.pendingDissReplies.push({ npcId: target.id, triggerDay: game.day + 2, playerQual: 60 });
+}
+
+function startLiveInterview(msgId) {
+  const msg = game.inbox.find(m => m.id === msgId);
+  if (msg) msg.resolved = true;
+  closeInbox();
+  activeInterviewShow = INTERVIEW_SHOWS[Math.floor(Math.random() * INTERVIEW_SHOWS.length)];
+  activeInterviewQuestions = [...INTERVIEW_QUESTIONS_POOL].sort(() => 0.5 - Math.random()).slice(0, 3);
+  interviewStep = 0;
+  renderInterviewStep();
+  document.getElementById("interview-modal").style.display = "flex";
+}
+
+function renderInterviewStep() {
+  const qObj = activeInterviewQuestions[interviewStep];
+  document.getElementById("int-header").innerText = `🎙️ WYWIAD NA ŻYWO (${interviewStep + 1}/3)`;
+  document.getElementById("int-show-name").innerText = activeInterviewShow;
+  document.getElementById("int-question").innerText = qObj.q;
+  const ansBox = document.getElementById("int-answers");
+  ansBox.innerHTML = "";
+  qObj.a.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.style.marginBottom = "8px";
+    btn.innerText = opt.txt;
+    btn.onclick = () => {
+      opt.fn();
+      interviewStep += 1;
+      if (interviewStep < activeInterviewQuestions.length) renderInterviewStep();
+      else {
+        document.getElementById("interview-modal").style.display = "none";
+        addNews(`🎙️ Głośny wywiad <b>${game.stageName}</b> w programie <b>${activeInterviewShow}</b> odbił się szerokim echem!`);
+        saveGame(); renderAll(); showToast("Wywiad zakończony!");
+      }
+    };
+    ansBox.appendChild(btn);
+  });
+}
+
+function jumpToDiss(msgId, npcId) {
+  const msg = game.inbox.find(m => m.id === msgId);
+  if (msg) msg.resolved = true;
+  closeInbox();
+  const studioBtn = document.querySelectorAll(".nav-btn")[1];
+  switchTab("studio", studioBtn);
+  document.getElementById("t-mode").value = "diss";
+  document.getElementById("t-target").style.display = "block";
+  document.getElementById("t-target").value = npcId;
+  showToast("Tryb Diss Track ustawiony – wpisz wersy!");
+}
+
+function tauntRival(npcId) {
+  if (game.energy < 10) return showToast("Potrzebujesz 10 energii!");
+  const rival = game.npcs.find(n => n.id === npcId);
+  if (!rival) return;
+  game.energy -= 10;
+  game.hype = Math.min(100, game.hype + 11);
+  modMainstream(-3);
+  spawnFloatGain("+11 HYPE 🔥");
+  addNews(`🔥 <b>${game.stageName}</b> zaczepia <b>${rival.name}</b> w social mediach: <i>"Czas zweryfikować kto tu naprawdę rapuje!"</i>`);
+  if (Math.random() < 0.65) {
+    game.pendingDissReplies.push({ npcId: rival.id, triggerDay: game.day + 2, playerQual: 55 });
+    showToast(`Zaczepiono ${rival.name}! Szykuje się odpowiedź...`);
+  } else showToast(`Zaczepiono ${rival.name}! +11 Hype`);
+  saveGame(); renderAll();
+}
+
+function generateSingleTalent() {
+  const isFemale = Math.random() < 0.35;
+  const prefixes = isFemale ? FEMALE_PREFIXES : MALE_PREFIXES;
+  const p = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const s = TALENT_SUFFIXES[Math.floor(Math.random() * TALENT_SUFFIXES.length)];
+  const styles = ["Trap", "Drill", "Boom Bap", "Melodic Rap", "Hardcore Rap", "Cloud Rap"];
+  const regions = Object.keys(POLAND_REGIONS);
+  const reg = regions[Math.floor(Math.random() * regions.length)];
+  const fans = Math.floor(400 + Math.random() * 8500);
+  const potential = Math.floor(55 + Math.random() * 40);
+  return { id: "tal_" + Date.now() + "_" + Math.floor(Math.random() * 9999), name: `${p} ${s}`, gender: isFemale ? "female" : "male", style: styles[Math.floor(Math.random() * styles.length)], region: reg, fans, potential, signCost: Math.floor(fans * 1.4 + potential * 40) };
+}
+
+function generateTalentPool() { return [generateSingleTalent(), generateSingleTalent(), generateSingleTalent(), generateSingleTalent()]; }
+
+function refreshTalentScouting() {
+  if (game.cash < 1500) return showToast("Scouting nowych talentów kosztuje 1 500 PLN!");
+  game.cash -= 1500;
+  addTx("Scouting młodych talentów", -1500);
+  game.talentPool = generateTalentPool();
+  saveGame(); renderAll(); showToast("Znaleziono 4 nowe talenty z całej Polski!");
+}
+
+function signTalentToOwnLabel(talId) {
+  if (!game.talentPool) return;
+  const idx = game.talentPool.findIndex(t => t.id === talId);
+  if (idx === -1) return;
+  const tal = game.talentPool[idx];
+  if (game.cash < tal.signCost) return showToast(`Potrzebujesz ${fmt(tal.signCost)} PLN!`);
+  game.cash -= tal.signCost;
+  addTx(`Kontrakt wytwórni: ${tal.name}`, -tal.signCost);
+  game.signedTalents.push(tal);
+  game.talentPool.splice(idx, 1);
+  game.talentPool.push(generateSingleTalent());
+  addNews(`✍️ <b>${tal.name}</b> (${tal.region}) podpisuje kontrakt w wytwórni <b>${game.ownLabelName}</b>!`);
+  saveGame(); renderAll(); showToast(`Zakontraktowano ${tal.name}!`);
+}
+
+function releaseCrewMixtape() {
+  if (!game.crew || game.crew.members.length === 0) return showToast("Najpierw zaproś członków do ekipy!");
+  if (game.energy < 40) return showToast("Potrzebujesz 40 energii!");
+  if (game.cash < 2000) return showToast("Nagranie Mixtape'u Ekipy kosztuje 2 000 PLN!");
+  game.energy -= 40; game.cash -= 2000;
+  addTx(`Mixtape Ekipy [${game.crew.tag}]`, -2000);
+  const members = game.crew.members.map(id => game.npcs.find(n => n.id === id)).filter(Boolean);
+  const avgRep = members.reduce((a, b) => a + b.rep, game.rep) / (members.length + 1);
+  const qual = Math.min(98, Math.round(avgRep * 0.7 + (game.skills.flow + game.skills.lyrics) * 0.25));
+  const boost = members.reduce((a, b) => a + Math.floor(b.fans * 0.12), 0);
+  const title = `[MIXTAPE] ${game.crew.name} – ${game.crew.tag} Tape Vol.${game.tracks.length + 1}`;
+  game.tracks.unshift({ id: "crew_mix_" + Date.now(), title, artist: `${game.stageName} & ${game.crew.tag}`, isPlayer: true, isAlbum: true, style: game.style, coverBg: "#4c1d95", coverIcon: "🔥", showPA: true, featBoost: boost, quality: qual, promo: 22, age: 0, dailyStreams: Math.floor(game.fans * 1.1 + boost * 0.4 + qual * 20), totalStreams: Math.floor(game.fans * 1.1 + boost * 0.4 + qual * 20), revenue: 0 });
+  game.hype = Math.min(100, game.hype + 22);
+  game.rep = Math.min(100, game.rep + 4);
+  addNews(`💿 PREMIERA EKIPY! <b>${game.crew.name} [${game.crew.tag}]</b> wypuszcza wspólny projekt <b>"${title}"</b>!`);
+  spawnFloatGain("MIXTAPE EKIPY! 🔥");
+  saveGame(); renderAll(); showToast(`Wydano Mixtape Ekipy! Jakość: ${qual}/100`);
+}
+
+function releaseLabelMixtape() {
+  if (!game.ownLabelName || !game.signedTalents || game.signedTalents.length === 0) return showToast("Zakontraktuj najpierw chociaż 1 artystę!");
+  if (game.energy < 35) return showToast("Potrzebujesz 35 energii!");
+  if (game.cash < 3000) return showToast("Wydanie Kompilacji Wytwórni kosztuje 3 000 PLN!");
+  game.energy -= 35; game.cash -= 3000;
+  addTx(`Kompilacja: ${game.ownLabelName}`, -3000);
+  const avgPot = game.signedTalents.reduce((a, b) => a + b.potential, 60) / (game.signedTalents.length + 1);
+  const qual = Math.min(98, Math.round(avgPot * 0.75 + game.skills.business * 0.25));
+  const boost = game.signedTalents.reduce((a, b) => a + Math.floor(b.fans * 0.25), 0);
+  game.signedTalents.forEach(t => { t.fans += 450; });
+  const title = `[LABEL TAPE] ${game.ownLabelName} All-Stars`;
+  game.tracks.unshift({ id: "lbl_mix_" + Date.now(), title, artist: `${game.ownLabelName} (${game.stageName})`, isPlayer: true, isAlbum: true, style: game.style, coverBg: "#78350f", coverIcon: "👑", showPA: true, featBoost: boost, quality: qual, promo: 25, age: 0, dailyStreams: Math.floor(game.fans * 1.15 + boost * 0.5 + qual * 22), totalStreams: Math.floor(game.fans * 1.15 + boost * 0.5 + qual * 22), revenue: 0 });
+  game.hype = Math.min(100, game.hype + 24);
+  game.rep = Math.min(100, game.rep + 4);
+  addNews(`🏢 KOMPILACJA WYTWÓRNI! <b>${game.ownLabelName}</b> wypuszcza wspólny album swoich artystów!`);
+  spawnFloatGain("KOMPILACJA WYTWÓRNI! 👑");
+  saveGame(); renderAll(); showToast(`Wydano Kompilację Wytwórni! Jakość: ${qual}/100`);
+}
+
+function startCareer() {
+  const name = document.getElementById("c-name").value.trim() || "Młody Kruk";
+  const tag = document.getElementById("c-tag").value.trim() || `${name} na bicie!`;
+  const region = document.getElementById("c-region").value;
+  const city = document.getElementById("c-city").value;
+  const style = document.getElementById("c-style").value;
+
+  const playerAppearance = { portrait: selectedPortrait, customImg: draftAvatarImg };
+  const npcsClone = JSON.parse(JSON.stringify(INITIAL_NPCS));
+  assignUniqueNpcPortraits(npcsClone, playerAppearance);
+
+  const npcTracks = npcsClone.map((npc, idx) => ({
+    id: "nt_" + idx,
+    title: ["Ulica Mówi", "Złoto i Beton", "Nocny Lot", "Bez Hamulców", "Mój Teren", "Ciemna Strefa"][idx % 6] + " #" + (idx + 1),
+    artist: npc.name,
+    isPlayer: false,
+    style: npc.style,
+    coverBg: ["#7f1d1d", "#1e3a8a", "#14532d", "#4c1d95"][idx % 4],
+    coverIcon: ["🔥", "💀", "👑", "💎"][idx % 4],
+    showPA: true,
+    quality: 55 + (idx % 35),
+    promo: 20,
+    age: 2,
+    dailyStreams: Math.floor(npc.fans * (0.35 + Math.random() * 0.3)),
+    totalStreams: npc.fans * 3,
+    revenue: 0
+  }));
+
+  game = {
+    stageName: name,
+    producerTag: tag,
+    region,
+    city,
+    style,
+    appearance: playerAppearance,
+    customBg: null,
+    gear: { goldChain: false, diamondChain: false },
+    day: 1,
+    cash: 900,
+    fans: 30,
+    hype: 5,
+    rep: 3,
+    energy: 100,
+    wena: 100,
+    mainstream: 30,
+    winStreak: 0,
+    trophies: 0,
+    claimedMilestones: [],
+    lastConcertDay: -10,
+    lastTourDay: -10,
+    regionInfluence: initRegionInfluence(region),
+    records: { maxDailyStreams: 0, maxConcertCrowd: 0, maxWinStreak: 0, bestQuality: 0 },
+    activeBeef: null,
+    trend: "Trap",
+    labelId: "indie",
+    labelDebt: 0,
+    ownsStudio: false,
+    merchActive: false,
+    merchBrand: null,
+    ownLabelName: null,
+    signedTalents: [],
+    talentPool: generateTalentPool(),
+    crew: null,
+    featCounts: {},
+    tournamentRound: 0,
+    pendingDissReplies: [],
+    inbox: [
+      {
+        id: "welcome_1",
+        day: 1,
+        read: false,
+        resolved: true,
+        title: "Witaj w RAP EMPIRE 9.2!",
+        body: `Zaczynasz w mieście ${city} (${region}). Zdobywaj Kamienie Milowe na profilu, rozkręć markę odzieżową i podbijaj kolejne województwa!`
+      }
+    ],
+    skills: { ...creatorSkills },
+    vaultTracks: [],
+    tracks: [],
+    npcs: npcsClone,
+    npcTracks,
+    news: [`<b>[Dzień 1]</b> ${name} z miasta <b>${city}</b> (${region}) zaczyna karierę z 900 PLN w kieszeni.`],
+    transactions: [{ day: 1, desc: "Oszczędności na start", amount: 900 }]
+  };
+
+  saveGame();
+  initMainUI();
+}
+
+function getWeeklyUpkeep() {
+  if (game.day <= 14) return 150;
+  return 220 + Math.floor(game.rep * 16) + (game.ownsStudio ? 400 : 0);
+}
+
+function advanceDays(days) {
+  for (let d = 0; d < days; d++) simulateOneDay();
+  saveGame(); renderAll(); showToast(`Minęło ${days} dni w grze!`);
+}
+
+function simulateOneDay() {
+  game.day += 1;
+  if (game.day % 7 === 0) {
+    const upkeep = getWeeklyUpkeep();
+    game.cash -= upkeep;
+    addTx("Cotygodniowe koszty życia i rachunki", -upkeep);
+  }
+  if (game.day % 14 === 0) {
+    const styles = ["Trap", "Drill", "Boom Bap", "Melodic Rap", "Hardcore Rap", "Cloud Rap"];
+    game.trend = styles[Math.floor(Math.random() * styles.length)];
+    addNews(`Zmiana trendów! Polska słucha teraz głównie: <b>${game.trend}</b>.`);
+  }
+  if (game.day % 5 === 0) {
+    if (!game.talentPool) game.talentPool = [];
+    if (game.talentPool.length >= 4) game.talentPool.shift();
+    game.talentPool.push(generateSingleTalent());
+  }
+  if (game.activeBeef) {
+    game.activeBeef.daysLeft -= 1;
+    if (game.activeBeef.daysLeft <= 0) {
+      const rival = game.npcs.find(n => n.id === game.activeBeef.rivalId);
+      const total = game.activeBeef.playerScore + game.activeBeef.rivalScore;
+      const playerPct = Math.round((game.activeBeef.playerScore / total) * 100);
+      if (playerPct >= 50) {
+        const gained = addFansBalanced(Math.floor((rival ? rival.fans : 5000) * 0.04 + 220));
+        game.rep = Math.min(100, game.rep + 5);
+        addNews(`🏆 WYNIK BEEFU! Słuchacze zdecydowali (${playerPct}% głosów): <b>${game.stageName}</b> pokonał <b>${rival ? rival.name : "rywala"}</b> (+${fmt(gained)} fanów)!`);
+        addInboxMessage({ title: `🏆 Wygrałeś Beef z ${rival ? rival.name : "rywalem"}!`, body: `Słuchacze oddali na Ciebie ${playerPct}% głosów. Przejmujesz ${fmt(gained)} fanów!`, resolved: true });
+      } else {
+        game.rep = Math.max(0, game.rep - 3);
+        addNews(`💀 PORAŻKA W BEEFIE! Słuchacze uznali (${100 - playerPct}%), że <b>${rival ? rival.name : "rywal"}</b> zjadł <b>${game.stageName}</b>!`);
+      }
+      game.activeBeef = null;
+    }
+  }
+  if (game.day % 60 === 0) {
+    if (game.rep >= 25 && game.tracks.length >= 2) {
+      game.rep = Math.min(100, game.rep + 6);
+      addCashWithTax("Nagroda finansowa: Gala Rap Awards", 10000);
+      addInboxMessage({ title: "🏆 GALA RAP AWARDS – WYGRAŁEŚ STATUETKĘ!", body: `Kapituła przyznała Ci nagrodę za ostatni sezon! Otrzymujesz +6 Reputacji oraz 10 000 PLN premii.`, resolved: true });
+      addNews(`🏆 <b>${game.stageName}</b> zdobywa statuetkę na gali <b>RAP AWARDS</b>!`);
+    }
+  }
+  const remainingReplies = [];
+  game.pendingDissReplies.forEach(repObj => {
+    if (game.day >= repObj.triggerDay) {
+      const npc = game.npcs.find(n => n.id === repObj.npcId);
+      if (npc) {
+        const npcDissQual = Math.min(98, Math.round(npc.rep * 0.85 + Math.random() * 20));
+        const dissTitle = ["Bez Litości", "Koniec Gry", "Fałszywy Gracz", "Czarny Worek", "Zejdź Ze Sceny"][Math.floor(Math.random() * 5)];
+        game.npcTracks.unshift({ id: "ndiss_" + Date.now(), title: `${dissTitle} (${game.stageName} Diss)`, artist: npc.name, isPlayer: false, style: npc.style, coverBg: "#7f1d1d", coverIcon: "💣", showPA: true, quality: npcDissQual, promo: 35, age: 1, dailyStreams: Math.floor(npc.fans * 0.75), totalStreams: Math.floor(npc.fans * 0.75), revenue: 0 });
+        if (game.activeBeef && game.activeBeef.rivalId === npc.id) game.activeBeef.rivalScore += npcDissQual;
+        addNews(`💣 ODPOWIEDŹ! <b>${npc.name}</b> wypuścił diss track <i>"${dissTitle}"</i> wymierzony w <b>${game.stageName}</b>!`);
+        addInboxMessage({ title: `💣 ${npc.name} odpowiedział dissem!`, body: `<b>${npc.name}</b> nagrał na Ciebie kawałek <i>"${dissTitle}"</i> (Ocena: ${npcDissQual}/100). Odpowiedz, żeby przeważyć głosowanie fanów!`, actionType: "diss_reply", npcId: npc.id });
+      }
+    } else remainingReplies.push(repObj);
+  });
+  game.pendingDissReplies = remainingReplies;
+
+  if (game.day % 5 === 0) {
+    const eligible = game.npcs.filter(n => n.rep <= game.rep + 25);
+    const sender = eligible[Math.floor(Math.random() * eligible.length)] || game.npcs[game.npcs.length - 1];
+    const roll = Math.random();
+    if (roll < 0.38) {
+      const show = INTERVIEW_SHOWS[Math.floor(Math.random() * INTERVIEW_SHOWS.length)];
+      addInboxMessage({ title: `🎙️ Zaproszenie na Wywiad: ${show}`, body: `Dziennikarz z <b>${show}</b> chce przeprowadzić z Tobą 3-pytaniowy wywiad na żywo!`, actionType: "interview_invite" });
+    } else if (roll < 0.7) {
+      addInboxMessage({ title: `🤝 Propozycja Featu od: ${sender.name}`, body: `<b>${sender.name}</b> (${fmt(sender.fans)} fanów) proponuje Ci gościnną zwrotkę na swój nowy numer.`, actionType: "feat_offer", npcId: sender.id });
+    } else {
+      addInboxMessage({ title: `🎤 Zaproszenie na Support: ${sender.name}`, body: `<b>${sender.name}</b> gra koncert i szuka lokalnego wsparcia na rozgrzewkę.`, actionType: "support_offer", npcId: sender.id });
+    }
+  }
+
+  game.energy = Math.min(100, game.energy + 30);
+  game.wena = Math.min(100, (game.wena || 100) + 12);
+  game.hype = Math.max(0, game.hype - 2);
+
+  if (game.ownsStudio) {
+    const studioRentIncome = 350 + Math.floor(Math.random() * 200);
+    game.cash += studioRentIncome;
+    if (game.day % 5 === 0) addTx("Wynajem własnego studia", studioRentIncome * 5);
+  }
+
+  // SYMULACJA SPRZEDAŻY AKTYWNEGO DROPU MARKI ODZIEŻOWEJ
+  simulateDailyMerchDrop();
+
+  if (game.ownLabelName && game.signedTalents && game.signedTalents.length > 0) {
+    let labelCutTotal = 0;
+    game.signedTalents.forEach(a => { a.fans = Math.min(450000, a.fans + Math.floor(25 + a.potential * 0.9)); labelCutTotal += Math.min(3500, a.fans * 0.004); });
+    if (labelCutTotal > 10) { game.cash += labelCutTotal; if (game.day % 3 === 0) addTx(`Zyski z artystów w ${game.ownLabelName}`, Math.round(labelCutTotal * 3)); }
+  }
+
+  let dailyCash = 0, dailyFans = 0, totalStreamsToday = 0;
+  const label = LABELS.find(l => l.id === game.labelId) || LABELS[0];
+  const mainstreamReachBonus = 1 + ((game.mainstream || 30) / 260);
+
+  game.tracks.forEach(t => {
+    t.age += 1;
+    let mult = t.age <= 3 ? 1.55 : t.age <= 9 ? 0.85 : t.age <= 20 ? 0.30 : 0.06;
+    if (t.isAlbum) mult *= 2.2;
+    if (t.style === game.trend) mult *= 1.25;
+    const base = Math.min(220000, game.fans * 0.32) + game.hype * 95 + Math.min(25000, (t.featBoost || 0));
+    const qualMult = (t.quality / 50) * (1 + t.promo / 90) * mainstreamReachBonus;
+    const streams = Math.floor(base * qualMult * mult * (0.85 + Math.random() * 0.3));
+    const gross = streams * 0.006;
+    let net = gross * (1 - label.cut);
+    if (game.labelDebt > 0 && net > 0) { const debtPay = Math.min(game.labelDebt, net * 0.8); game.labelDebt -= debtPay; net -= debtPay; }
+    t.dailyStreams = streams; t.totalStreams += streams; t.revenue += net;
+    totalStreamsToday += streams; dailyCash += net; dailyFans += Math.floor(streams * (t.quality / 2200));
+
+    if (!t.goldAwarded && t.totalStreams >= 35000) {
+      t.goldAwarded = true; game.rep = Math.min(100, game.rep + 4);
+      addNews(`🏆 Wydawnictwo <b>"${t.title}"</b> (${game.stageName}) zdobywa ZŁOTĄ PŁYTĘ!`);
+      addInboxMessage({ title: "🏆 ZŁOTA PŁYTA!", body: `Twój projekt <b>"${t.title}"</b> przekroczył 35 000 odsłuchań i pokrył się Złotem!`, resolved: true });
+    }
+    if (!t.platAwarded && t.totalStreams >= 100000) {
+      t.platAwarded = true; game.rep = Math.min(100, game.rep + 8);
+      addNews(`💿 Wydawnictwo <b>"${t.title}"</b> (${game.stageName}) pokryło się PLATYNĄ!`);
+      addInboxMessage({ title: "💿 PLATYNOWA PŁYTA!", body: `Ogromny sukces! <b>"${t.title}"</b> przekroczył 100 000 odsłuchań i zdobywa Platynę!`, resolved: true });
+    }
+  });
+
+  if (game.records && totalStreamsToday > game.records.maxDailyStreams) game.records.maxDailyStreams = totalStreamsToday;
+  if (dailyCash > 1) { addCashWithTax(`Tantiemy ze streamingu`, Math.round(dailyCash)); addFansBalanced(dailyFans); }
+
+  game.npcTracks.forEach(nt => {
+    nt.age += 1;
+    let mult = nt.age <= 4 ? 1.3 : nt.age <= 14 ? 0.75 : 0.25;
+    const npc = game.npcs.find(n => n.name === nt.artist);
+    nt.dailyStreams = Math.floor((npc ? npc.fans : 10000) * (0.28 + Math.random() * 0.3) * mult);
+    nt.totalStreams += nt.dailyStreams;
+  });
+
+  if (game.day % 6 === 0) {
+    const rndNpc = game.npcs[Math.floor(Math.random() * game.npcs.length)];
+    rndNpc.fans = Math.min(1800000, rndNpc.fans + Math.floor(150 + Math.random() * 500));
+    const newTitle = ["Złoty Strzał", "Młoda Krew", "Bez Litości", "Warszawski Świt", "Podziemny Król"][Math.floor(Math.random() * 5)];
+    game.npcTracks.push({ id: "nt_" + Date.now() + Math.random(), title: newTitle, artist: rndNpc.name, isPlayer: false, style: rndNpc.style, coverBg: "#27272a", coverIcon: "🎵", showPA: true, quality: 65 + Math.floor(Math.random() * 25), promo: 25, age: 1, dailyStreams: Math.floor(rndNpc.fans * 0.55), totalStreams: Math.floor(rndNpc.fans * 0.55), revenue: 0 });
+    if (game.npcTracks.length > 35) game.npcTracks.shift();
+    addNews(`🔥 <b>${rndNpc.name}</b> wypuścił nowy singiel <i>"${newTitle}"</i>.`);
+  }
+
+  if (game.day % 7 === 0) triggerRandomEvent();
+}
+
+function triggerRandomEvent() {
+  let idx = Math.floor(Math.random() * RANDOM_EVENTS.length);
+  if (idx === lastEventIndex) idx = (idx + 1) % RANDOM_EVENTS.length;
+  lastEventIndex = idx;
+  const ev = RANDOM_EVENTS[idx];
+  document.getElementById("ev-title").innerText = ev.title;
+  document.getElementById("ev-desc").innerText = ev.desc;
+  const box = document.getElementById("ev-choices");
+  box.innerHTML = "";
+  [ev.c1, ev.c2].forEach(c => {
+    const btn = document.createElement("button");
+    btn.style.marginBottom = "8px";
+    btn.innerText = c.txt;
+    btn.onclick = () => { c.fn(); document.getElementById("event-modal").style.display = "none"; saveGame(); renderAll(); };
+    box.appendChild(btn);
+  });
+  document.getElementById("event-modal").style.display = "flex";
+}
+
+function workOddJob() {
+  if (game.energy < 30) return showToast("Za mało energii!");
+  game.energy -= 30; game.cash += 220;
+  addTx("Praca dorywcza / magazyn", 220);
+  spawnFloatGain("+220 zł 💰");
+  saveGame(); renderAll(); showToast("Zarobiono +220 PLN (-30 Energii)");
+}
+
+function recoverWena() {
+  if (game.energy < 25) return showToast("Potrzebujesz 25 energii na reset!");
+  game.energy -= 25; game.wena = Math.min(100, (game.wena || 50) + 45);
+  modMainstream(-3);
+  spawnFloatGain("+45% WENY 💡");
+  saveGame(); renderAll(); showToast(`Złapano świeżą inspirację! Wena: ${game.wena}%`);
+}
+
+function trainSkill(key) {
+  const cost = 45 + game.skills[key] * 7;
+  if (game.energy < 20) return showToast("Potrzebujesz 20 energii!");
+  if (game.cash < cost) return showToast(`Potrzebujesz ${cost} PLN!`);
+  if (game.skills[key] >= 100) return showToast("Maksymalny poziom!");
+  game.energy -= 20; game.cash -= cost;
+  addTx(`Trening: ${SKILL_NAMES[key]}`, -cost);
+  const gain = game.skills[key] < 45 ? 2 : 1;
+  game.skills[key] = Math.min(100, game.skills[key] + gain);
+  spawnFloatGain(`${SKILL_NAMES[key]} +${gain}`);
+  saveGame(); renderAll(); showToast(`${SKILL_NAMES[key]} +${gain} (-${cost} PLN)`);
+}
+
+function postSocial() {
+  if (game.energy < 10) return showToast("Za mało energii!");
+  game.energy -= 10;
+  const hypeGain = 3 + Math.floor(game.skills.charisma / 28);
+  const gained = addFansBalanced(Math.floor(4 + game.hype * 0.45));
+  game.hype = Math.min(100, game.hype + hypeGain);
+  spawnFloatGain(`+${hypeGain} HYPE 📱`);
+  saveGame(); renderAll(); showToast(`Post wrzucony! +${hypeGain} Hype, +${gained} fanów`);
+}
+
+function getFeatCost(npc) {
+  if (game.crew && game.crew.members.includes(npc.id)) return 0;
+  return Math.max(200, Math.floor(npc.fans * 0.22));
+}
+
+function recordTrack() {
+  const title = document.getElementById("t-title").value.trim();
+  const mode = document.getElementById("t-mode").value;
+  const featId = document.getElementById("t-feat").value;
+  const targetId = document.getElementById("t-target").value;
+  const prodId = parseInt(document.getElementById("t-producer").value);
+  const studioVal = parseInt(document.getElementById("t-studio").value);
+  const coverBg = document.getElementById("cov-bg").value;
+  const coverIcon = document.getElementById("cov-icon").value;
+  const coverFilter = document.getElementById("cov-filter").value;
+  const showPA = document.getElementById("cov-pa").checked;
+  const lyrics = document.getElementById("t-lyrics").value.trim();
+
+  if (!title) return showToast("Wpisz tytuł kawałka!");
+  if (game.energy < 25) return showToast("Potrzebujesz 25 energii!");
+
+  const prod = PRODUCERS.find(p => p.id === prodId);
+  const isSelfProd = prodId === 0;
+  const trackStyle = isSelfProd ? document.getElementById("bm-drums").value : prod.style;
+  const prodQual = isSelfProd ? (40 + Math.floor(game.skills.business * 0.35)) : prod.quality;
+  const studioCost = game.ownsStudio ? 0 : studioVal;
+
+  let featNpc = null, featCost = 0;
+  if (featId) { featNpc = game.npcs.find(n => n.id === featId); featCost = getFeatCost(featNpc); }
+
+  const totalCost = prod.cost + studioCost + featCost;
+  if (game.cash < totalCost) return showToast(`Brakuje kasy! Potrzebujesz ${fmt(totalCost)} PLN.`);
+
+  const lines = lyrics.split("\n").filter(l => l.trim().length > 2);
+  let lyricsBonus = Math.min(14, lines.length * 2);
+  for (let i = 0; i < lines.length - 1; i++) {
+    if (lines[i].trim().slice(-2).toLowerCase() === lines[i + 1].trim().slice(-2).toLowerCase()) lyricsBonus += 3;
+  }
+
+  const wenaMult = 0.72 + ((game.wena || 100) / 100) * 0.35;
+  const studioMult = game.ownsStudio ? 1.45 : (studioVal === 0 ? 0.72 : studioVal === 600 ? 0.94 : studioVal === 2500 ? 1.15 : 1.40);
+  const skillAvg = (game.skills.flow + game.skills.lyrics + game.skills.delivery) / 3;
+  const featBonusQual = featNpc ? 6 : 0;
+  const finalQuality = Math.min(99, Math.max(12, Math.round((skillAvg * 0.55 + prodQual * 0.45 + lyricsBonus + featBonusQual) * studioMult * wenaMult)));
+
+  game.cash -= totalCost; game.energy -= 25; game.wena = Math.max(10, (game.wena || 100) - 25);
+  if (featNpc) { if (!game.featCounts) game.featCounts = {}; game.featCounts[featNpc.id] = (game.featCounts[featNpc.id] || 0) + 1; }
+  if (game.records && finalQuality > game.records.bestQuality) game.records.bestQuality = finalQuality;
+
+  addTx(`Nagranie: "${title}"${featNpc ? ` (feat. ${featNpc.name})` : ""}`, -totalCost);
+
+  let fullTitle = featNpc ? `${title} (feat. ${featNpc.name})` : title;
+  if (isSelfProd) fullTitle += " [Prod. Ty]";
+  const featBoost = featNpc ? Math.floor(featNpc.fans * 0.14) : 0;
+  const trackCoverData = { coverImg: tempCustomCover, coverBg, coverIcon, coverFilter, showPA };
+
+  if (mode === "vault") {
+    game.vaultTracks.push({ title: fullTitle, style: trackStyle, quality: finalQuality, featBoost, ...trackCoverData });
+    document.getElementById("t-title").value = ""; document.getElementById("t-lyrics").value = "";
+    clearCustomCover(); saveGame(); renderAll();
+    return showToast(`Zapisano "${fullTitle}" na Album/EP!`);
+  }
+
+  let hypeBoost = Math.round(finalQuality / 7) + (featNpc ? 8 : 0);
+  if (mode === "diss") {
+    const rival = game.npcs.find(n => n.id === targetId);
+    fullTitle = `${fullTitle} [${rival.name} Diss]`;
+    hypeBoost += 16; modMainstream(-6);
+    game.rep = Math.min(100, game.rep + 3);
+    game.pendingDissReplies.push({ npcId: rival.id, triggerDay: game.day + 2, playerQual: finalQuality });
+    if (!game.activeBeef || game.activeBeef.rivalId !== rival.id) {
+      game.activeBeef = { rivalId: rival.id, playerScore: finalQuality, rivalScore: Math.round(rival.rep * 0.65), daysLeft: 4 };
+    } else game.activeBeef.playerScore += finalQuality;
+    addNews(`💣 BEEF! <b>${game.stageName}</b> atakuje <b>${rival.name}</b> dissem! Głosowanie na RapPortalu trwa!`);
+  } else {
+    addNews(`🎵 <i>"${game.producerTag}"</i> – <b>${game.stageName}</b> wypuścił singiel <b>"${fullTitle}"</b> (Ocena: ${finalQuality}/100).`);
+  }
+
+  game.hype = Math.min(100, game.hype + hypeBoost);
+  game.tracks.unshift({ id: "pt_" + Date.now(), title: fullTitle, artist: game.stageName, isPlayer: true, isAlbum: false, style: trackStyle, ...trackCoverData, featBoost, quality: finalQuality, promo: 8, age: 0, dailyStreams: Math.floor(game.fans * 0.45 + finalQuality * 9 + featBoost * 0.3), totalStreams: Math.floor(game.fans * 0.45 + finalQuality * 9 + featBoost * 0.3), revenue: 0 });
+  document.getElementById("t-title").value = ""; document.getElementById("t-lyrics").value = "";
+  clearCustomCover(); spawnFloatGain(`PREMIERA! ${finalQuality}/100 💿`);
+  saveGame(); renderAll(); showToast(`Wydano "${fullTitle}"! Jakość: ${finalQuality}/100`);
+}
+
+function releaseAlbum() {
+  if (game.vaultTracks.length < 3) return showToast("Zbierz minimum 3 numery!");
+  if (game.cash < 1500) return showToast("Potrzebujesz 1 500 PLN!");
+  const title = document.getElementById("alb-title").value.trim() || "Debiutancki Projekt";
+  const isFullAlbum = game.vaultTracks.length >= 6;
+  const prefix = isFullAlbum ? "[ALBUM]" : "[EP]";
+  const avgQual = Math.round(game.vaultTracks.reduce((a, b) => a + b.quality, 0) / game.vaultTracks.length);
+  const totalFeatBoost = game.vaultTracks.reduce((a, b) => a + (b.featBoost || 0), 0);
+  const firstCover = game.vaultTracks[0];
+
+  game.cash -= 1500;
+  addTx(`Wydanie ${prefix} "${title}"`, -1500);
+  game.hype = Math.min(100, game.hype + (isFullAlbum ? 30 : 18));
+  game.rep = Math.min(100, game.rep + (isFullAlbum ? 5 : 2));
+  game.tracks.unshift({ id: "alb_" + Date.now(), title: `${prefix} ${title} (${game.vaultTracks.length} utw.)`, artist: game.stageName, isPlayer: true, isAlbum: true, style: firstCover.style, coverImg: firstCover.coverImg, coverBg: firstCover.coverBg, coverIcon: firstCover.coverIcon, coverFilter: firstCover.coverFilter, showPA: firstCover.showPA, featBoost: totalFeatBoost, quality: avgQual, promo: 15, age: 0, dailyStreams: Math.floor(game.fans * 1.1 + avgQual * 22 + totalFeatBoost * 0.4), totalStreams: Math.floor(game.fans * 1.1 + avgQual * 22 + totalFeatBoost * 0.4), revenue: 0 });
+  addNews(`💿 PREMIERA! <b>${game.stageName}</b> wypuszcza <b>${prefix} "${title}"</b>!`);
+  game.vaultTracks = []; document.getElementById("alb-title").value = "";
+  spawnFloatGain(`${prefix} WYDANY! 🏆`);
+  saveGame(); renderAll(); showToast(`Wydano ${prefix} "${title}"!`);
+}
+
+function runPromo() {
+  if (game.tracks.length === 0) return showToast("Najpierw wydaj utwór!");
+  const trackId = document.getElementById("p-track").value;
+  const baseCost = parseInt(document.getElementById("p-tier").value);
+  const locMult = parseFloat(document.getElementById("p-loc").value);
+  const totalCost = Math.round(baseCost * locMult);
+  if (game.cash < totalCost) return showToast(`Potrzebujesz ${fmt(totalCost)} PLN na tę produkcję!`);
+  const track = game.tracks.find(t => t.id === trackId);
+  const mktBonus = 1 + game.skills.marketing / 100;
+  const promoGain = Math.round((baseCost === 400 ? 12 : baseCost === 2000 ? 32 : 65) * locMult * mktBonus);
+  const hypeGain = Math.round((baseCost === 400 ? 10 : baseCost === 2000 ? 25 : 50) * locMult);
+  game.cash -= totalCost; track.promo += promoGain; game.hype = Math.min(100, game.hype + hypeGain);
+  modMainstream(4); addTx(`Klip/Promo: "${track.title}"`, -totalCost);
+  addNews(`🎬 <b>${game.stageName}</b> wypuścił nowy materiał wideo do utworu <b>"${track.title}"</b>!`);
+  saveGame(); renderAll(); showToast(`Klip/Kampania gotowa! +${hypeGain} Hype (-${fmt(totalCost)} zł)`);
+}
+
+function playConcert() {
+  if (game.tracks.length === 0) return showToast("Musisz mieć wydany chociaż 1 utwór!");
+  if (game.day - (game.lastConcertDay || -10) < 3) return showToast(`Rynek potrzebuje przerwy! Kolejny koncert za ${3 - (game.day - game.lastConcertDay)} dni.`);
+  if (game.energy < 40) return showToast("Potrzebujesz 40 energii na koncert!");
+
+  const region = document.getElementById("g-region").value;
+  const city = document.getElementById("g-city").value;
+  const venue = VENUES[parseInt(document.getElementById("g-venue").value)];
+  const ticketPrice = parseInt(document.getElementById("g-price").value);
+
+  if (game.rep < venue.minRep) return showToast(`Wymagana reputacja: ${venue.minRep}!`);
+  if (game.cash < venue.rent) return showToast(`Brakuje ${fmt(venue.rent)} PLN na wynajem!`);
+
+  game.lastConcertDay = game.day; game.energy -= 40; game.cash -= venue.rent;
+  game.wena = Math.min(100, (game.wena || 80) + 15);
+  addTx(`Wynajem: ${venue.name} (${city})`, -venue.rent);
+
+  const regInf = (game.regionInfluence && game.regionInfluence[region]) || 5;
+  const regionMult = 0.75 + (regInf / 100) * 0.45;
+  const isHomeTown = city === game.city;
+  const homeBonus = isHomeTown ? 1.35 : 1.0;
+
+  let surpriseGuest = null, guestBonusMult = 1.0;
+  const friends = game.npcs.filter(n => (game.crew && game.crew.members.includes(n.id)) || ((game.featCounts && game.featCounts[n.id]) > 0));
+  if (friends.length > 0 && Math.random() < 0.42) {
+    surpriseGuest = friends[Math.floor(Math.random() * friends.length)];
+    guestBonusMult = 1.18; game.hype = Math.min(100, game.hype + 12);
+  }
+
+  const pricePenalty = Math.max(0.12, 1.25 - (ticketPrice / (22 + game.rep * 1.4)));
+  const potentialCrowd = (game.fans * 0.25 + game.hype * 3.8) * pricePenalty * homeBonus * regionMult * guestBonusMult;
+  const attendance = Math.min(venue.cap, Math.max(10, Math.floor(potentialCrowd)));
+  if (game.records && attendance > game.records.maxConcertCrowd) game.records.maxConcertCrowd = attendance;
+
+  const showScore = Math.min(100, Math.round((game.skills.flow + game.skills.delivery + game.skills.charisma) / 3 + Math.random() * 14));
+  const guestTips = surpriseGuest ? Math.floor(attendance * 4) : 0;
+  const totalRev = attendance * ticketPrice + Math.floor(attendance * (showScore / 100) * 10) + guestTips;
+
+  const netRev = addCashWithTax(`Koncert ${city} (${attendance}/${venue.cap})`, totalRev);
+  const gained = addFansBalanced(Math.floor(attendance * 0.28));
+  game.rep = Math.min(100, game.rep + (attendance / venue.cap > 0.65 ? 3 : 1));
+
+  const infGain = Math.min(28, 10 + Math.round((attendance / venue.cap) * 14) + (surpriseGuest ? 6 : 0));
+  addRegionInfluence(region, infGain);
+
+  if (surpriseGuest) {
+    addNews(`🔥 NIESPODZIANKA! Podczas koncertu <b>${game.stageName}</b> w <b>${city}</b> na scenę wbił gość: <b>${surpriseGuest.name}</b>! Publika oszalała!`);
+    spawnFloatGain(`GOŚĆ: ${surpriseGuest.name.toUpperCase()}! 🔥`);
+    showToast(`Niespodzianka: ${surpriseGuest.name} na scenie! Bilans ${fmt(netRev - venue.rent)} zł (+${infGain}% woj.)`);
+  } else {
+    addNews(`🎤 Koncert <b>${game.stageName}</b> w mieście <b>${city}</b> (${region}): przyszło ${attendance}/${venue.cap} osób (+${infGain}% regionu)!`);
+    spawnFloatGain(`+${fmt(netRev - venue.rent)} zł 🎤`);
+    showToast(`Koncert w ${city}: bilans ${fmt(netRev - venue.rent)} PLN (+${infGain}% woj. ${region})`);
+  }
+  saveGame(); renderAll();
+}
+
+function playFestival(festId) {
+  if (game.day - (game.lastTourDay || -10) < 6) return showToast(`Festiwale/Trasy mają limit! Kolejny za ${6 - (game.day - game.lastTourDay)} dni.`);
+  const f = FESTIVALS.find(x => x.id === festId);
+  if (!f) return;
+  if (game.rep < f.minRep || game.fans < f.minFans) return showToast(`Wymagane: ${f.minRep} Rep oraz ${fmt(f.minFans)} fanów!`);
+  if (game.energy < 55) return showToast("Potrzebujesz 55 energii na występ festiwalowy!");
+
+  game.lastTourDay = game.day; game.energy -= 55;
+  const netFee = addCashWithTax(`Gaża: ${f.name}`, f.fee);
+  const gained = addFansBalanced(f.fanGain);
+  game.rep = Math.min(100, game.rep + 4); game.wena = Math.min(100, (game.wena || 80) + 25);
+  modMainstream(f.streetDelta);
+  Object.keys(POLAND_REGIONS).forEach(r => addRegionInfluence(r, 4));
+  addNews(`🌍 WIELKA SCENA! <b>${game.stageName}</b> zagrał na <b>${f.name}</b> i zgarnął ${fmt(netFee)} PLN!`);
+  spawnFloatGain(`+${fmt(netFee)} zł 🌍`);
+  saveGame(); renderAll(); showToast(`Zagrano ${f.name}! +${fmt(netFee)} PLN i +${fmt(gained)} fanów`);
+}
+
+function createCrew() {
+  const name = document.getElementById("crew-name").value.trim();
+  const tag = document.getElementById("crew-tag").value.trim().toUpperCase();
+  if (!name || tag.length < 2) return showToast("Podaj nazwę ekipy i 2–4 literowy skrót!");
+  game.crew = { name, tag, members: [] };
+  addNews(`🤝 Powstała nowa ekipa na scenie: <b>${name} [${tag}]</b> założona przez <b>${game.stageName}</b>!`);
+  saveGame(); renderAll(); showToast(`Założono ekipę ${name} [${tag}]!`);
+}
+
+function getCrewRequiredRep(npc) {
+  const featsTogether = (game.featCounts && game.featCounts[npc.id]) ? game.featCounts[npc.id] : 0;
+  return Math.max(0, npc.rep - featsTogether * 15);
+}
+
+function recruitSelectedToCrew() {
+  if (!game.crew) return;
+  if (game.crew.members.length >= 3) return showToast("Maksymalnie 3 członków AI w ekipie!");
+  const npcId = document.getElementById("crew-recruit-select").value;
+  if (!npcId) return;
+  const npc = game.npcs.find(n => n.id === npcId);
+  if (!npc) return;
+  if (game.activeBeef && game.activeBeef.rivalId === npc.id) return showToast(`Nie możesz zaprosić ${npc.name} w trakcie aktywnego beefu!`);
+  const reqRep = getCrewRequiredRep(npc);
+  const playerPower = game.rep + Math.floor(game.skills.charisma * 0.4);
+  if (playerPower < reqRep) return showToast(`${npc.name} wymaga ${reqRep} pkt (Rep + Charyzma). Nagraj z nim featy lub trenuj Charyzmę!`);
+  game.crew.members.push(npcId);
+  addNews(`🔥 <b>${npc.name}</b> dołącza do kolektywu <b>${game.crew.name} [${game.crew.tag}]</b>!`);
+  saveGame(); renderAll(); showToast(`${npc.name} dołączył do ekipy!`);
+}
+
+function playCrewTour() {
+  if (!game.crew || game.crew.members.length === 0) return showToast("Zrekrutuj najpierw chociaż 1 członka ekipy!");
+  if (game.day - (game.lastTourDay || -10) < 6) return showToast(`Ekipa musi odpocząć! Kolejna trasa za ${6 - (game.day - game.lastTourDay)} dni.`);
+  if (game.energy < 60) return showToast("Trasa ekipy wymaga 60 energii!");
+  if (game.cash < 2500) return showToast("Potrzebujesz 2 500 PLN na organizację trasy!");
+
+  game.lastTourDay = game.day; game.energy -= 60; game.cash -= 2500;
+  addTx(`Organizacja Trasy Ekipy [${game.crew.tag}]`, -2500);
+  let membersCount = game.crew.members.length;
+  const tourRevenue = Math.floor(4200 + membersCount * 1800 + game.rep * 95 + game.skills.charisma * 45);
+  const netRev = addCashWithTax(`Zysk z trasy ekipy (4 miasta)`, tourRevenue);
+  const gained = addFansBalanced(Math.floor(220 + membersCount * 110 + game.rep * 5));
+  game.rep = Math.min(100, game.rep + 4);
+  Object.keys(POLAND_REGIONS).sort(() => 0.5 - Math.random()).slice(0, 4).forEach(r => addRegionInfluence(r, 10));
+  addNews(`🚐 Ekipa <b>${game.crew.name}</b> zakończyła trasę po Polsce z kompletem publiczności!`);
+  saveGame(); renderAll(); showToast(`Trasa zakończona! Bilans: +${fmt(netRev - 2500)} PLN (+${fmt(gained)} fanów)`);
+}
+
+function generateRivalVerse(rival, words) {
+  const pName = game ? game.stageName : "Młody";
+  const st = rival ? rival.style : "Trap";
+  const styleOpeners = {
+    "Drill": [`Wchodzę w kominiarce ${pName}, słyszysz ten mroczny bas,`, `Zimny stalowy klimat, na twoją ksywę przyszedł czas,`],
+    "Boom Bap": [`Klasyczny werbel bije ${pName}, posłuchaj starej szkoły,`, `Bez plastiku i ściemy, rozkładam cię na atomy,`],
+    "Hardcore Rap": [`Bez hamulców wchodzę na bit, zmiotę cię z powierzchni ziemi,`, `Mój głos tnie jak brzytwa, tu nikt niczego nie ściemni,`],
+    "Melodic Rap": [`Złote płyty na ścianie, ty wciąż patrzysz z daleka,`, `Mój refren nuci cała Polska, na ciebie nikt nie czeka,`]
+  };
+  const openers = styleOpeners[st] || [`Słuchaj uważnie ${pName}, zaraz dam ci lekcję stylu,`, `Wychodzisz na ten mikrofon i zostajesz daleko z tyłu,`];
+  const middles = [
+    `Mój ${words[0]} miażdży twoje słabe, wymuszone wersy,\nWjeżdżam z tym ${words[1]}, w tej grze zawsze jestem pierwszy,`,
+    `Każdy mój ${words[0]} to cios prosto w twoje ego,\nRzucam na stół ${words[1]}, nie masz tu nic do powiedzenia kolego,`
+  ];
+  const closers = [
+    `Moje ${words[2]} świeci jaśniej niż tysiące gwiazd tu!`,
+    `Dla mnie ${words[2]} i korona, oddaj mikrofon i zejdź ze sceny!`
+  ];
+  return `${openers[Math.floor(Math.random() * openers.length)]}\n${middles[Math.floor(Math.random() * middles.length)]}\n${closers[Math.floor(Math.random() * closers.length)]}`;
+}
+
+function rollFreestylePrompt() {
+  const catObj = FREESTYLE_CATEGORIES[Math.floor(Math.random() * FREESTYLE_CATEGORIES.length)];
+  const randomTopic = catObj.topics[Math.floor(Math.random() * catObj.topics.length)];
+  const pool = [...catObj.words];
+  const chosenWords = [];
+  for (let i = 0; i < 3; i++) chosenWords.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  currentFbPrompt = { category: catObj.category, topic: randomTopic, words: chosenWords };
+  document.getElementById("fb-cat-badge").innerText = catObj.category;
+  document.getElementById("fb-topic").innerText = randomTopic;
+  document.getElementById("fb-words").innerText = chosenWords.join(", ");
+
+  const rivalSel = document.getElementById("fb-rival");
+  if (game && rivalSel && rivalSel.value) {
+    const rival = game.npcs.find(n => n.id === rivalSel.value) || game.npcs[game.npcs.length - 1];
+    document.getElementById("fb-rival-header").innerText = `${rival.name.toUpperCase()} [${rival.style}] RZUCA WERSY:`;
+    document.getElementById("fb-rival-verse").innerText = generateRivalVerse(rival, chosenWords);
+    const rAv = document.getElementById("vs-rival-avatar");
+    if (rAv) rAv.innerHTML = getNpcAvatarHTML(rival);
+  }
+}
+
+function joinTournament() {
+  if (game.cash < 500) return showToast("Wpisowe kosztuje 500 PLN!");
+  game.cash -= 500; game.tournamentRound = 1;
+  addTx("Wpisowe: Turniej Freestyle", -500);
+  rollFreestylePrompt(); saveGame(); renderAll(); showToast("Zapisano do Turnieju! Czas na Ćwierćfinał.");
+}
+
+function fightFreestyle(isTournament = false) {
+  if (game.energy < 20) return showToast("Potrzebujesz 20 energii!");
+  const verses = document.getElementById("fb-verses").value.trim();
+  const lines = verses.split("\n").filter(l => l.trim().length > 3);
+  if (lines.length < 4) return showToast("Wpisz minimum 4 pełne wersy!");
+
+  let rival = isTournament ? game.npcs[Math.max(0, game.npcs.length - game.tournamentRound * 3)] : game.npcs.find(n => n.id === document.getElementById("fb-rival").value);
+  const streetBonus = (game.mainstream || 30) < 35 ? 6 : 0;
+  let score = game.skills.freestyle * 0.6 + game.skills.lyrics * 0.4 + streetBonus;
+  for (let i = 0; i < lines.length - 1; i++) {
+    if (lines[i].trim().slice(-2).toLowerCase() === lines[i + 1].trim().slice(-2).toLowerCase()) score += 10;
+  }
+  const lowerAll = verses.toLowerCase();
+  currentFbPrompt.words.forEach(w => { if (lowerAll.includes(w.toLowerCase())) score += 12; });
+  if (lowerAll.includes(rival.name.split(" ")[0].toLowerCase())) score += 8;
+
+  const roundDifficulty = isTournament ? (game.tournamentRound * 12) : 0;
+  const npcScore = 30 + rival.rep * 0.58 + roundDifficulty + Math.random() * 16;
+  game.energy -= 20; document.getElementById("fb-verses").value = "";
+
+  if (score >= npcScore) {
+    game.winStreak = (game.winStreak || 0) + 1;
+    if (game.records && game.winStreak > game.records.maxWinStreak) game.records.maxWinStreak = game.winStreak;
+    modMainstream(-3);
+    if (isTournament) {
+      if (game.tournamentRound < 3) { game.tournamentRound += 1; showToast(`AWANS! Wygrałeś z ${rival.name} (${Math.round(score)} vs ${Math.round(npcScore)} pkt)!`); }
+      else {
+        game.tournamentRound = 0; game.cash += 6000; game.rep = Math.min(100, game.rep + 8);
+        const gained = addFansBalanced(450);
+        addTx("Zwycięstwo w Turnieju Freestyle!", 6000);
+        addNews(`🏆 <b>${game.stageName}</b> wygrywa Ogólnopolski Turniej Freestyle i zgarnia 6 000 PLN!`);
+        showToast(`MISTRZ TURNIEJU! +6 000 PLN i +${gained} fanów!`);
+      }
+    } else {
+      const prize = 500 + rival.rep * 25;
+      game.cash += prize; game.rep = Math.min(100, game.rep + 3);
+      const gained = addFansBalanced(55);
+      addTx(`Wygrana Freestyle 1v1 vs ${rival.name}`, prize);
+      spawnFloatGain(`WYGRANA! +${fmt(prize)} zł ⚔️`);
+      showToast(`WYGRANA (${Math.round(score)} vs ${Math.round(npcScore)} pkt)! +${fmt(prize)} PLN, +${gained} fanów`);
+    }
+  } else {
+    game.winStreak = 0;
+    if (isTournament) { game.tournamentRound = 0; showToast(`ODPADŁEŚ z turnieju w starciu z ${rival.name}.`); }
+    else { game.rep = Math.max(0, game.rep - 1); showToast(`PRZEGRANA (${Math.round(score)} vs ${Math.round(npcScore)} pkt).`); }
+  }
+  rollFreestylePrompt(); saveGame(); renderAll();
+}
+
+function foundOwnLabel() {
+  const name = document.getElementById("own-lbl-name").value.trim();
+  if (!name) return showToast("Podaj nazwę swojej wytwórni!");
+  if (game.cash < 60000 || game.rep < 50) return showToast("Wymagane 60 000 PLN oraz 50 Reputacji!");
+  game.cash -= 60000; game.ownLabelName = name; game.labelId = "indie";
+  if (!game.signedTalents) game.signedTalents = [];
+  if (!game.talentPool) game.talentPool = generateTalentPool();
+  addTx(`Założenie wytwórni: ${name}`, -60000);
+  addNews(`🏢 POTĘGA BIZNESOWA! <b>${game.stageName}</b> otwiera własną wytwórnię: <b>${name}</b>!`);
+  saveGame(); renderAll(); showToast(`Założono wytwórnię ${name}!`);
+}
+
+function signLabel(id) {
+  if (game.ownLabelName) return showToast("Masz własną wytwórnię!");
+  const lbl = LABELS.find(l => l.id === id);
+  if (game.fans < lbl.minFans) return showToast(`Wymagane ${fmt(lbl.minFans)} fanów!`);
+  if (game.labelDebt > 0) return showToast(`Najpierw spłać zaliczkę (${fmt(game.labelDebt)} PLN)!`);
+  if (lbl.advance > 0) { game.cash += lbl.advance; game.labelDebt = lbl.advance; modMainstream(10); addTx(`Zaliczka z ${lbl.name}`, lbl.advance); addNews(`✍️ <b>${game.stageName}</b> podpisuje kontrakt z <b>${lbl.name}</b>!`); }
+  game.labelId = id; saveGame(); renderAll(); showToast(`Podpisano: ${lbl.name}`);
+}
+
+function buyOwnStudio() {
+  if (game.cash < 45000) return showToast("Potrzebujesz 45 000 PLN!");
+  game.cash -= 45000; game.ownsStudio = true;
+  addTx("Inwestycja: Własne studio nagrań PRO", -45000);
+  saveGame(); renderAll(); showToast("Masz własne studio PRO!");
+}
+
+function exportSaveFile() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(game));
+  const a = document.createElement("a");
+  a.setAttribute("href", dataStr);
+  a.setAttribute("download", `rap-empire-${game.stageName}-dzien${game.day}.json`);
+  document.body.appendChild(a); a.click(); a.remove();
+  showToast("Pobrano plik zapisu gry!");
+}
+
+function importSaveFile(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed.stageName || !parsed.skills) throw new Error("Zły plik");
+      if (parsed.npcs) assignUniqueNpcPortraits(parsed.npcs, parsed.appearance);
+      game = parsed; saveGame(); renderAll(); showToast("Wczytano zapis kariery!");
+    } catch (err) { showToast("Błąd: Nieprawidłowy plik zapisu!"); }
+  };
+  reader.readAsText(file);
+}
+
+function getCareerStatus() {
+  if (game.fans >= 500000 && game.rep >= 85) return "Legenda Sceny";
+  if (game.fans >= 100000 && game.rep >= 60) return "Gwiazda Krajowa";
+  if (game.fans >= 15000 && game.rep >= 32) return "Wschodząca Gwiazda";
+  if (game.fans >= 1500) return "Underground";
+  return "Początkujący";
+}
+
+function getStageTierName() {
+  if (game.fans >= 100000) return "🏟️ Scena";
+  if (game.fans >= 1500) return "🎛️ Studio";
+  return "🧱 Osiedle";
+}
+
+function renderAll() {
+  updateInboxBadge();
+  applySceneBackground();
+  if (!game.regionInfluence) game.regionInfluence = initRegionInfluence(game.region || "Opolskie");
+  if (!game.claimedMilestones) game.claimedMilestones = [];
+
+  const wenaVal = game.wena !== undefined ? game.wena : 100;
+  const msVal = game.mainstream !== undefined ? game.mainstream : 30;
+  const conqueredCount = Object.values(game.regionInfluence).filter(v => v >= 100).length;
+  const goldCount = game.tracks.filter(t => t.goldAwarded).length;
+  const platCount = game.tracks.filter(t => t.platAwarded).length;
+  const unclaimedCount = getUnclaimedMilestonesCount();
+  const activeBadgeTitle = getHighestClaimedBadgeTitle();
+
+  document.getElementById("ui-day").innerText = `Dzień ${game.day}`;
+  document.getElementById("ui-cash").innerText = `${fmt(game.cash)} zł`;
+  document.getElementById("ui-fans").innerText = fmt(game.fans);
+  document.getElementById("ui-hype").innerText = game.hype;
+  document.getElementById("ui-wena").innerText = `${wenaVal}%`;
+  document.getElementById("ui-energy").innerText = `${game.energy}%`;
+  document.getElementById("studio-wena-badge").innerText = `Wena: ${wenaVal}%`;
+  document.getElementById("vs-player-name").innerText = game.stageName;
+  document.getElementById("vs-player-avatar").innerHTML = getAvatarHTML(game.appearance);
+
+  // KARTA PROFILOWA RAPERA NA PULPICIE
+  document.getElementById("ui-profile-avatar").innerHTML = getAvatarHTML(game.appearance);
+  document.getElementById("ui-stage-tier").innerText = getStageTierName();
+  document.getElementById("ui-stage-name").innerText = game.crew ? `[${game.crew.tag}] ${game.stageName}` : game.stageName;
+  document.getElementById("ui-status").innerText = getCareerStatus();
+  document.getElementById("ui-location").innerText = `📍 ${game.city} • woj. ${game.region}`;
+  document.getElementById("ui-style-tag").innerText = `Styl: ${game.style} • Tag: "${game.producerTag}"`;
+  document.getElementById("ui-crew-badge").innerText = game.ownLabelName ? `🏢 CEO: ${game.ownLabelName}` : (game.crew ? `🤝 Ekipa: ${game.crew.name}` : "");
+
+  const mBadgeEl = document.getElementById("ui-milestone-badge");
+  mBadgeEl.innerText = activeBadgeTitle
+    ? `🎖️ ${activeBadgeTitle} (${game.claimedMilestones.length}/${MILESTONES_DEF.length})`
+    : `🎖️ Kamienie Milowe: ${game.claimedMilestones.length}/${MILESTONES_DEF.length}`;
+
+  document.getElementById("ui-rep").innerText = game.rep;
+  document.getElementById("ui-rep-bar").style.width = `${game.rep}%`;
+  document.getElementById("ui-trend").innerText = game.trend;
+
+  const streetLbl = msVal < 35 ? "Głos Ulicy (+Freestyle)" : msVal > 65 ? "Mainstream (+Streamy)" : "Zbalansowany";
+  document.getElementById("ui-street-lbl").innerText = streetLbl;
+  document.getElementById("ui-street-bar").style.width = `${msVal}%`;
+
+  document.getElementById("ui-gold-count").innerText = `${goldCount} 🥇`;
+  document.getElementById("ui-plat-count").innerText = `${platCount} 💿`;
+  document.getElementById("ui-conquered-count").innerText = `${conqueredCount}/16 🗺️`;
+  document.getElementById("ui-trophies").innerText = `${game.claimedMilestones.length}/${MILESTONES_DEF.length}`;
+  document.getElementById("ui-claim-dot").style.display = unclaimedCount > 0 ? "block" : "none";
+
+  // NAJWIĘKSZY HIT
+  const hitBox = document.getElementById("ui-biggest-hit-box");
+  if (game.tracks.length === 0) {
+    hitBox.onclick = null;
+    hitBox.style.cursor = "default";
+    document.getElementById("ui-hit-title").innerText = "Brak wydanych utworów";
+    document.getElementById("ui-hit-streams").innerText = "-";
+    document.getElementById("ui-hit-sub").innerText = "Nagraj numer w Studiu";
+  } else {
+    const topHit = [...game.tracks].sort((a, b) => b.totalStreams - a.totalStreams)[0];
+    const certIcon = topHit.platAwarded ? " 💿" : topHit.goldAwarded ? " 🥇" : "";
+    hitBox.onclick = () => openSingleDetails(topHit.id);
+    hitBox.style.cursor = "pointer";
+    document.getElementById("ui-hit-title").innerText = `${topHit.title}${certIcon}`;
+    document.getElementById("ui-hit-streams").innerText = `${fmt(topHit.totalStreams)} odtw.`;
+    document.getElementById("ui-hit-sub").innerText = `Ocena ${topHit.quality}/100 • ${fmt(topHit.revenue)} zł`;
+  }
+
+  document.getElementById("map-conquered-badge").innerText = `${conqueredCount} / 16 Król`;
+  document.getElementById("ui-region-map").innerHTML = Object.keys(POLAND_REGIONS).map(reg => {
+    const val = game.regionInfluence[reg] || 5;
+    const isKing = val >= 100;
+    return `
+      <div class="reg-tile ${isKing ? "conquered" : ""}" onclick="selectRegionFromMap('${reg}')">
+        <div class="row" style="margin-bottom:3px;">
+          <b style="font-size:11.5px; color:${isKing ? "var(--gold)" : "var(--text)"};">${isKing ? "👑 " : ""}${reg}</b>
+          <span style="font-size:10.5px; font-weight:800;">${val}%</span>
+        </div>
+        <div class="bar-bg" style="height:5px; margin-top:2px;"><div class="bar-fill" style="width:${val}%"></div></div>
+      </div>
+    `;
+  }).join("");
+
+  const gigWait = Math.max(0, 3 - (game.day - (game.lastConcertDay || -10)));
+  const gigBadge = document.getElementById("g-cd-badge");
+  gigBadge.innerText = gigWait === 0 ? "Gotowy" : `Przerwa: ${gigWait}d`;
+  gigBadge.className = gigWait === 0 ? "badge gold" : "badge";
+
+  const tourWait = Math.max(0, 6 - (game.day - (game.lastTourDay || -10)));
+  const festBadge = document.getElementById("fest-cd-badge");
+  festBadge.innerText = tourWait === 0 ? "Gotowy" : `Przerwa: ${tourWait}d`;
+  festBadge.className = tourWait === 0 ? "badge gold" : "badge";
+
+  const beefCard = document.getElementById("active-beef-card");
+  if (game.activeBeef) {
+    const rival = game.npcs.find(n => n.id === game.activeBeef.rivalId);
+    const total = game.activeBeef.playerScore + game.activeBeef.rivalScore;
+    const pPct = Math.round((game.activeBeef.playerScore / total) * 100);
+    beefCard.style.display = "block";
+    document.getElementById("beef-days-left").innerText = `Koniec za ${game.activeBeef.daysLeft}d`;
+    document.getElementById("beef-p-name").innerText = game.stageName;
+    document.getElementById("beef-r-name").innerText = rival ? rival.name : "Rywal";
+    document.getElementById("beef-bar").style.width = `${pPct}%`;
+    document.getElementById("beef-p-pct").innerText = `${pPct}% głosów`;
+    document.getElementById("beef-r-pct").innerText = `${100 - pPct}% głosów`;
+  } else beefCard.style.display = "none";
+
+  const trainEl = document.getElementById("skills-train-list");
+  trainEl.innerHTML = "";
+  Object.keys(SKILL_NAMES).forEach(k => {
+    const cost = 45 + game.skills[k] * 7;
+    trainEl.innerHTML += `<div class="row"><span>${SKILL_NAMES[k]}: <b>${game.skills[k]}</b>/100</span><button class="sm" onclick="trainSkill('${k}')">Trenuj (${cost} zł)</button></div>`;
+  });
+
+  document.getElementById("ui-news").innerHTML = game.news.map(n => `<div class="news-item">${n}</div>`).join("");
+  renderStudioCarousels();
+
+  const featSel = document.getElementById("t-feat");
+  featSel.innerHTML = `<option value="">Bez gościa (Solo)</option>` + game.npcs.slice().reverse().map(n => {
+    const cost = getFeatCost(n);
+    return `<option value="${n.id}">Feat: ${n.name} (${cost === 0 ? "EKIPA 0 zł" : fmt(cost) + " zł"})</option>`;
+  }).join("");
+
+  document.getElementById("t-target").innerHTML = game.npcs.map(n => `<option value="${n.id}">Cel dissa: ${n.name}</option>`).join("");
+  document.getElementById("ui-vault-count").innerText = game.vaultTracks.length;
+  document.getElementById("ui-vault-list").innerHTML = game.vaultTracks.map(v => `<div class="muted">• ${v.title} [${v.style}] – Jak. ${v.quality}/100</div>`).join("");
+  document.getElementById("album-release-box").style.display = game.vaultTracks.length >= 3 ? "block" : "none";
+
+  document.getElementById("ui-track-count").innerText = game.tracks.length;
+  document.getElementById("ui-my-tracks").innerHTML = game.tracks.length === 0
+    ? `<div class="muted">Brak wydanych utworów.</div>`
+    : game.tracks.map(t => `<div class="list-item" onclick="openSingleDetails('${t.id}')" style="display:flex; gap:10px; align-items:center; cursor:pointer;">${renderCoverBox(t)}<div style="flex:1;"><div class="row" style="margin-bottom:4px;"><b style="font-size:12.5px;">${t.title} ${t.platAwarded ? "💿" : t.goldAwarded ? "🥇" : ""}</b><span class="badge">${t.style}</span></div><div class="row muted" style="margin-bottom:0;"><span>Jak: ${t.quality}/100 | D${t.age}</span><span class="gold-txt">${fmt(t.totalStreams)} odtw. (${fmt(t.revenue)} zł)</span></div></div></div>`).join("");
+
+  document.getElementById("ui-festivals-list").innerHTML = FESTIVALS.map(f => `<div class="list-item"><div class="row" style="margin-bottom:4px;"><b>${f.name}</b><button class="sm primary" onclick="playFestival('${f.id}')">Zagraj (+${fmt(f.fee)} zł)</button></div><div class="muted">Wym. Rep: ${f.minRep} | Wym. Fani: ${fmt(f.minFans)} | Nagroda: +${fmt(f.fanGain)} fanów</div></div>`).join("");
+
+  document.getElementById("p-track").innerHTML = game.tracks.length === 0 ? `<option>Brak utworów</option>` : game.tracks.map(t => `<option value="${t.id}">${t.title} (Promo: ${t.promo})</option>`).join("");
+
+  const allSingles = [...game.tracks, ...game.npcTracks].sort((a, b) => b.dailyStreams - a.dailyStreams).slice(0, 15);
+  document.getElementById("ui-top-singles").innerHTML = allSingles.map((s, i) => `<div class="list-item ${s.isPlayer ? "highlight" : ""}" onclick="openSingleDetails('${s.id}')" style="padding:7px 10px; display:flex; gap:9px; align-items:center; cursor:pointer;">${renderCoverBox(s)}<div class="row" style="margin-bottom:0; flex:1;"><span style="font-size:12px;"><b>#${i + 1}</b> ${s.title}<br><span class="muted">${s.artist}</span></span><span class="gold-txt" style="font-size:11px;">${fmt(s.dailyStreams)}/d</span></div></div>`).join("");
+
+  const allArtists = [
+    { name: game.stageName, fans: game.fans, style: game.style, isPlayer: true, avatarHTML: getAvatarHTML(game.appearance) },
+    ...game.npcs.map(n => ({ ...n, isPlayer: false, avatarHTML: getNpcAvatarHTML(n) }))
+  ].sort((a, b) => b.fans - a.fans).slice(0, 15);
+
+  document.getElementById("ui-top-artists").innerHTML = allArtists.map((a, i) => `
+    <div class="list-item ${a.isPlayer ? "highlight" : ""}" style="padding:7px 10px; display:flex; gap:9px; align-items:center;">
+      <div class="mini-avatar">${a.avatarHTML}</div>
+      <div class="row" style="margin-bottom:0; flex:1;">
+        <span><b>#${i + 1}</b> ${a.name} <span class="badge">${a.style}</span></span>
+        <span style="font-size:12px;"><b>${fmt(a.fans)}</b> fanów</span>
+      </div>
+    </div>
+  `).join("");
+
+  document.getElementById("ui-win-streak").innerText = `Seria: ${game.winStreak || 0}`;
+  const tBox = document.getElementById("ui-tournament-box");
+  if (game.tournamentRound === 0) {
+    tBox.innerHTML = `<div class="muted" style="margin-bottom:8px;">Wygraj 3 walki z rzędu (Ćwierćfinał, Półfinał, Finał), aby zdobyć <b>6 000 PLN</b>!</div><button class="primary" onclick="joinTournament()">ZAPISZ SIĘ DO TURNIEJU (WPISOWE: 500 PLN)</button>`;
+  } else {
+    const roundNames = ["", "ĆWIERĆFINAŁ (1/3)", "PÓŁFINAŁ (2/3)", "WIELKI FINAŁ (3/3)"];
+    tBox.innerHTML = `<div class="list-item highlight"><b>Aktywny etap: ${roundNames[game.tournamentRound]}</b><div class="muted" style="margin-top:4px;">Wpisz zwrotkę w polu poniżej i kliknij „WALCZ W TURNIEJU”!</div></div><button class="primary" onclick="fightFreestyle(true)">WALCZ W TURNIEJU (-20 Energii)</button>`;
+  }
+
+  const prevRival = document.getElementById("fb-rival").value;
+  document.getElementById("fb-rival").innerHTML = game.npcs.slice().reverse().map(n => `<option value="${n.id}" ${n.id === prevRival ? "selected" : ""}>${n.name} (Rep: ${n.rep})</option>`).join("");
+  const activeRival = game.npcs.find(n => n.id === document.getElementById("fb-rival").value) || game.npcs[game.npcs.length - 1];
+  if (activeRival) document.getElementById("vs-rival-avatar").innerHTML = getNpcAvatarHTML(activeRival);
+
+  document.getElementById("ui-taunt-list").innerHTML = game.npcs.slice(0, 7).map(n => `
+    <div class="row">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="mini-avatar">${getNpcAvatarHTML(n)}</div>
+        <span><b>${n.name}</b> <span class="muted">[${n.style}]</span></span>
+      </div>
+      <button class="sm" onclick="tauntRival('${n.id}')">🔥 Zaczep</button>
+    </div>
+  `).join("");
+
+  const cBox = document.getElementById("ui-crew-box");
+  if (!game.crew) {
+    cBox.innerHTML = `<div class="muted" style="margin-bottom:8px;">Załóż własną ekipę, zapraszaj raperów na darmowe featy, nagrywaj Mixtape'y Ekipy i ruszaj w trasy koncertowe!</div><input id="crew-name" placeholder="Nazwa ekipy (np. Opolski Kartel)" maxlength="24" /><input id="crew-tag" placeholder="Skrót / TAG (np. OPK)" maxlength="4" /><button class="primary" onclick="createCrew()">ZAŁÓŻ EKIPĘ (ZA DARMO)</button>`;
+  } else {
+    const membersList = game.crew.members.map(id => game.npcs.find(n => n.id === id)).filter(Boolean);
+    const availableCandidates = game.npcs.filter(n => !game.crew.members.includes(n.id)).slice().reverse();
+    cBox.innerHTML = `
+      <div class="list-item highlight">
+        <div class="row"><b>${game.crew.name} [${game.crew.tag}]</b><span class="badge gold">${membersList.length}/3 członków</span></div>
+        <div class="muted">Skład: ${game.stageName}${membersList.length ? ", " + membersList.map(m => m.name).join(", ") : ""}</div>
+      </div>
+      <div class="grid-2" style="margin-bottom:12px;">
+        <button class="primary" onclick="releaseCrewMixtape()" style="padding:9px 6px;">💿 Mixtape Ekipy<br><span style="font-size:9.5px; opacity:0.85;">2 000 zł | -40E</span></button>
+        <button onclick="playCrewTour()" style="padding:9px 6px;">🚐 Trasa Ekipy<br><span class="muted" style="font-size:9.5px;">2 500 zł | -60E</span></button>
+      </div>
+      <div class="muted" style="margin-bottom:6px;">Wybierz dowolnego artystę ze sceny (wspólne featy obniżają wymagania):</div>
+      <select id="crew-recruit-select">${availableCandidates.map(c => {
+        const fCount = (game.featCounts && game.featCounts[c.id]) || 0;
+        const req = getCrewRequiredRep(c);
+        return `<option value="${c.id}">${c.name} [${c.style}] – Wym. ${req} pkt (Featy: ${fCount})</option>`;
+      }).join("")}</select>
+      <button onclick="recruitSelectedToCrew()">➕ ZAPROŚ WYBRANĄ OSOBĘ DO EKIPY</button>
+    `;
+  }
+
+  // RENDEROWANIE MARKI ODZIEŻOWEJ I LIMITOWANYCH DROPÓW
+  const merchBox = document.getElementById("ui-merch-brand-box");
+  if (!game.merchBrand) {
+    merchBox.innerHTML = `
+      <div class="muted" style="margin-bottom:8px;">Załóż własną markę odzieżową i wypuszczaj limitowane Dropy (kolekcje) dla swoich fanów!</div>
+      <input id="merch-brand-name" placeholder="Nazwa Twojej marki (np. Kruk Wear)" maxlength="24" />
+      <select id="merch-brand-vibe">
+        <option value="street">Styl: Streetwear / Osiedle (Lojalni fani, klimat ulicy)</option>
+        <option value="luxury">Styl: High Fashion / Luxury (Wyższe ceny, klimat Mainstream)</option>
+        <option value="album">Styl: Merch Płytowy (Uniwersalny brand muzyczny)</option>
+      </select>
+      <button class="primary" onclick="foundMerchBrand()">ZAŁÓŻ MARKĘ ODZIEŻOWĄ (5 000 PLN)</button>
+    `;
+  } else {
+    const mb = game.merchBrand;
+    const vibeNames = { street: "Streetwear", luxury: "High Fashion", album: "Merch Płytowy" };
+    let activeDropHTML = "";
+
+    if (mb.activeDrop) {
+      const ad = mb.activeDrop;
+      const soldQty = ad.totalQty - ad.remainingQty;
+      const pct = Math.round((soldQty / ad.totalQty) * 100);
+      activeDropHTML = `
+        <div class="list-item highlight" style="margin-bottom:0;">
+          <div class="row" style="margin-bottom:4px;">
+            <b>🔥 AKTYWNY DROP: "${ad.name}"</b>
+            <span class="badge gold">${pct}% sprzedane</span>
+          </div>
+          <div class="muted" style="margin-bottom:6px;">${ad.tierName} • Cena: ${ad.price} PLN/szt. • Pozostało: ${ad.remainingQty}/${ad.totalQty} szt.</div>
+          <div class="bar-bg" style="height:8px;"><div class="bar-fill green" style="width:${pct}%"></div></div>
+          <div class="row" style="margin-top:6px; margin-bottom:0; font-size:11.5px;">
+            <span>Dzień sprzedaży: ${ad.daysActive}/10</span>
+            <b class="green-txt">Utarg: +${fmt(ad.revenue)} PLN</b>
+          </div>
+        </div>
+      `;
+    } else {
+      const dropWait = Math.max(0, 5 - (game.day - (mb.lastDropDay || -10)));
+      if (dropWait > 0) {
+        activeDropHTML = `<div class="muted">Projektowanie nowej kolekcji... Kolejny Drop gotowy za <b>${dropWait} dni</b>.</div>`;
+      } else {
+        const availableTiers = DROP_TIERS.filter(t => mb.level >= t.minBrandLvl);
+        const defTier = availableTiers[0];
+        activeDropHTML = `
+          <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:6px;">
+            <div style="font-size:11.5px; font-weight:800; color:var(--gold); margin-bottom:6px;">🚀 WYPUSZCZANIE NOWEGO DROPU</div>
+            <input id="drop-title" placeholder="Nazwa kolekcji (np. Beton Drop 01)" maxlength="24" />
+            <div class="grid-2">
+              <select id="drop-tier" onchange="onDropTierChange()" style="margin-bottom:0;">
+                ${DROP_TIERS.map(t => `<option value="${t.id}" ${mb.level < t.minBrandLvl ? "disabled" : ""}>${t.name} ${mb.level < t.minBrandLvl ? `(Poz. ${t.minBrandLvl})` : ""}</option>`).join("")}
+              </select>
+              <select id="drop-qty" onchange="updateDropCalc()" style="margin-bottom:0;">
+                <option value="100">Nakład: 100 szt.</option>
+                <option value="300">Nakład: 300 szt.</option>
+                <option value="800">Nakład: 800 szt.</option>
+                <option value="2000">Nakład: 2 000 szt.</option>
+              </select>
+            </div>
+            <div class="row" style="margin-top:9px; margin-bottom:2px;">
+              <span>Cena za sztukę: <b id="drop-price-val" class="gold-txt">${defTier.recPrice} PLN</b></span>
+              <span class="muted">Sugerowana: ${defTier.recPrice} zł</span>
+            </div>
+            <input type="range" id="drop-price" min="${Math.round(defTier.unitCost * 1.5)}" max="${defTier.maxPrice}" step="5" value="${defTier.recPrice}" oninput="document.getElementById('drop-price-val').innerText=this.value+' PLN'; updateDropCalc();" />
+            <div id="drop-calc-lbl" class="muted" style="margin-bottom:8px;">Koszt produkcji: <b class="red-txt">${fmt(100 * defTier.unitCost)} zł</b> • Potencjalny przychód: <b class="green-txt">${fmt(100 * defTier.recPrice)} zł</b></div>
+            <button class="primary" onclick="launchMerchDrop()">👕 WYPUŚĆ LIMITOWANY DROP</button>
+          </div>
+        `;
+      }
+    }
+
+    merchBox.innerHTML = `
+      <div class="list-item highlight">
+        <div class="row" style="margin-bottom:4px;">
+          <b style="font-size:14px;">👕 ${mb.name} <span class="badge">${vibeNames[mb.vibe] || "Streetwear"}</span></b>
+          <span class="badge gold">Poziom ${mb.level}/3</span>
+        </div>
+        <div class="row muted" style="margin-bottom:0;">
+          <span>Sprzedano łącznie: <b>${fmt(mb.totalSold)} szt.</b></span>
+          <span>Sold Outy: <b class="gold-txt">${mb.soldOuts || 0} ⚡</b></span>
+        </div>
+      </div>
+      ${activeDropHTML}
+    `;
+  }
+
+  const ownLblBox = document.getElementById("ui-own-label-box");
+  if (!game.ownLabelName) {
+    ownLblBox.innerHTML = `<div class="muted" style="margin-bottom:8px;">Wymagane: <b>60 000 PLN</b> oraz <b>50 Reputacji</b>. Kontraktuj młode talenty i nagrywaj wspólne Kompilacje Wytwórni!</div><input id="own-lbl-name" placeholder="Nazwa Twojej wytwórni (np. Prudnik Records)" maxlength="24" /><button class="primary" onclick="foundOwnLabel()">ZAŁÓŻ WYTWÓRNIĘ (60 000 PLN)</button>`;
+  } else {
+    if (!game.signedTalents) game.signedTalents = [];
+    if (!game.talentPool || game.talentPool.length === 0) game.talentPool = generateTalentPool();
+    ownLblBox.innerHTML = `
+      <div class="list-item highlight">
+        <div class="row"><b>🏢 ${game.ownLabelName}</b><button class="sm" onclick="refreshTalentScouting()">🔍 Nowe talenty (1 500 zł)</button></div>
+        <div class="muted" style="margin-bottom:8px;">Zakontraktowani artyści (${game.signedTalents.length}): ${game.signedTalents.length ? game.signedTalents.map(s => `${s.name} (${fmt(s.fans)})`).join(", ") : "Brak"}</div>
+        <button class="primary" onclick="releaseLabelMixtape()">👑 WYDAJ KOMPILACJĘ WYTWÓRNI (3 000 zł | -35E)</button>
+      </div>
+      <div class="muted" style="margin-bottom:6px;">Dostępne młode talenty z Polski (rotują co 5 dni):</div>
+      ${game.talentPool.map(u => `<div class="row"><span style="font-size:12px;"><b>${u.name}</b> <span class="badge">${u.style}</span><br><span class="muted">${u.region} • Potencjał: ${u.potential}/100</span></span><button class="sm primary" onclick="signTalentToOwnLabel('${u.id}')">${fmt(u.signCost)} zł</button></div>`).join("")}
+    `;
+  }
+
+  document.getElementById("ui-debt-info").innerText = game.labelDebt > 0 ? `Pozostała zaliczka do spłacenia: ${fmt(game.labelDebt)} PLN` : "Brak zadłużenia wobec wytwórni.";
+  document.getElementById("ui-contract-box").innerHTML = LABELS.map(l => {
+    const active = game.labelId === l.id;
+    return `<div class="list-item ${active ? "highlight" : ""}"><div class="row"><b>${l.name}</b>${active ? `<span class="badge gold">AKTYWNY</span>` : `<button class="sm primary" onclick="signLabel('${l.id}')">Podpisz</button>`}</div><div class="muted">Zaliczka: ${fmt(l.advance)} zł | Prowizja: ${Math.round(l.cut * 100)}% | Wym. fani: ${fmt(l.minFans)}</div></div>`;
+  }).join("");
+
+  document.getElementById("ui-empire-box").innerHTML = `
+    <div class="list-item ${game.ownsStudio ? "highlight" : ""}"><div class="row"><b>Własne Studio Nagrań PRO</b>${game.ownsStudio ? `<span class="badge gold">POSIADASZ</span>` : `<button class="sm primary" onclick="buyOwnStudio()">Kup (45 000 zł)</button>`}</div><div class="muted">Nagrywasz za 0 PLN z jakością Top Studio + zarabiasz na wynajmie.</div></div>
+  `;
+
+  document.getElementById("ui-transactions").innerHTML = game.transactions.map(tx => `<div class="row" style="font-size:12px;"><span><span class="muted">[D${tx.day}]</span> ${tx.desc}</span><b class="${tx.amount >= 0 ? "green-txt" : "red-txt"}">${tx.amount >= 0 ? "+" : ""}${fmt(tx.amount)} zł</b></div>`).join("");
+  updateRegionConcertInfo();
+}
+
+function switchTab(tabId, btn) {
+  currentTab = tabId;
+  document.querySelectorAll("#main-ui .screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("tab-" + tabId).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  applySceneBackground();
+}
+
+function switchSubTab(subId, btn) {
+  document.getElementById("sub-free").style.display = subId === "sub-free" ? "block" : "none";
+  document.getElementById("sub-crew").style.display = subId === "sub-crew" ? "block" : "none";
+  btn.parentElement.querySelectorAll(".seg-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function switchConcertTab(tabId, btn) {
+  document.getElementById("c-local").style.display = tabId === "c-local" ? "block" : "none";
+  document.getElementById("c-map").style.display = tabId === "c-map" ? "block" : "none";
+  document.getElementById("c-fest").style.display = tabId === "c-fest" ? "block" : "none";
+  btn.parentElement.querySelectorAll(".seg-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+document.getElementById("t-mode").addEventListener("change", function () {
+  document.getElementById("t-target").style.display = this.value === "diss" ? "block" : "none";
+});
+
+function saveGame() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(game)); }
+  catch (e) { showToast("Uwaga: Mało pamięci przeglądarki – używaj mniejszych zdjęć!"); }
+}
+
+function hardReset() { localStorage.removeItem(SAVE_KEY); game = null; showTitleScreen(); }
+
+function initMainUI() {
+  currentScreenMode = "game";
+  document.getElementById("screen-title").style.display = "none";
+  document.getElementById("screen-creator").classList.remove("active");
+  document.getElementById("main-ui").style.display = "block";
+  initRegionSelects("g-region", "g-city", game.region || "Opolskie");
+  document.getElementById("g-city").value = game.city;
+  renderAll();
+  rollFreestylePrompt();
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>
