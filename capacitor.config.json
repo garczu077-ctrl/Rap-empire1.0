@@ -1,0 +1,6 @@
+{
+  "appId": "com.rapempire.game",
+  "appName": "Rap Empire",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
